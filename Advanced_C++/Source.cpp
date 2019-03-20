@@ -4,7 +4,7 @@
 
 int main()
 {
-	GameOfLife Conway("test_input.txt");
+	GameOfLife Conway("../Advanced_C++/test_input.txt");
 	while (true)
 	{
 		Conway.describe();
