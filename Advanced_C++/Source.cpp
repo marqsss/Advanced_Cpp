@@ -1,17 +1,53 @@
 #include <thread> // sleep
 #include <chrono> // sleep
+#include <iostream>
 #include "GameOfLife.h"
 
 int main()
 {
-	GameOfLife Conway("../Advanced_C++/test_input.txt");
-	while (true)
+	int choice = 0;
+	bool valid = false;
+	GameOfLife GOL;
+	while (!valid)
+		switch (choice)
+		{
+		case 1:
+			GOL.create("../Advanced_C++/input2.txt");
+			valid = true;
+			break;
+		case 2:
+			GOL.create("../Advanced_C++/test_input.txt");
+			valid = true;
+			break;
+		case 3:
+			GOL.create("../Advanced_C++/Gosper_glider_gun.txt");
+			valid = true;
+			break;
+		case 4:
+			GOL.create("../Advanced_C++/Diehard.txt");
+			valid = true;
+			break;
+		default:
+			printf("Choose input file:\n\
+			1. Simple demonstration (block + blinker)\n\
+			2. Smallest immortal arrangement\n\
+			3. Gosper glider gun\n\
+			4. Diehard (dies after 130 steps)\n");
+			std::cin >> choice;
+			break;
+		}
+
+	GOL.print();
+	GOL.describe();
+	while (GOL.run())
 	{
-		Conway.describe();
-		Conway.print();
-		Conway.run();
+		GOL.print();
+		GOL.describe();
 		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
+	GOL.describe();
 
+
+	system("pause");
 	return 0;
 }

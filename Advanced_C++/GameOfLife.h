@@ -15,6 +15,9 @@ public:
 	bool run(unsigned int iterations = 1, bool safetycheck = true);
 private:
 	static unsigned long iterCounter;
+	unsigned int width;
+	unsigned int height;
+	bool constant;
 	class Cell
 	{
 	public:
@@ -24,7 +27,7 @@ private:
 	std::vector<std::vector<Cell> > cellMap;
 	std::vector<unsigned int> lifeMap;
 	std::vector<unsigned int> reviveMap;
-	inline void update(Cell& cell);
+	inline bool update(Cell& cell);
 	unsigned int checkNeighbours(unsigned int, unsigned int);
 };
 
