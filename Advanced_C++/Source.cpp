@@ -6,7 +6,7 @@ int main()
 {
 	GameOfLife Conway("test_input.txt");
 	while (true)
-	{
+	{ 
 		Conway.describe();
 		Conway.print();
 		Conway.run();
