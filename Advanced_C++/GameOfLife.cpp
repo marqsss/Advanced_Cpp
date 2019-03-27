@@ -66,6 +66,19 @@ bool GameOfLife::create(std::string filename)
 	return true;
 }
 
+bool GameOfLife::createFromRLE(fs::path p)
+{
+	std::ifstream f(p.c_str());
+	if (f.is_open())
+	{
+		// read RLE-format
+	}
+	else
+		return false;
+	f.close();
+	return true;
+}
+
 void GameOfLife::print()
 {
 	std::string s = "";

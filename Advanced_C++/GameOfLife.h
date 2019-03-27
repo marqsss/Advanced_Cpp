@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 class GameOfLife
 {
@@ -10,6 +13,7 @@ public:
 	GameOfLife() {};
 	GameOfLife(std::string);
 	bool create(std::string);
+	bool createFromRLE(fs::path);
 	void print();
 	void describe();
 	bool run(unsigned int iterations = 1, bool safetycheck = true);
