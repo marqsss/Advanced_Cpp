@@ -34,10 +34,8 @@ int main()
 			valid = true;
 			break;
 		case 5:
-			namespace fs = std::filesystem;
-			for (auto& p : fs::directory_iterator("."))
-				std::cout << p.path() << '\n';
-			choice = -1;
+			GOL.createFromRLE("../Advanced_C++/Gosper_glider_gun.rle");
+			valid = true;
 			break;
 		default:
 			printf("Choose input file:\n\
@@ -51,13 +49,14 @@ int main()
 
 	if (choice)
 	{
-		GOL.print();
 		GOL.describe();
+		GOL.print();
+
 		while (GOL.run())
 		{
-			GOL.print();
 			GOL.describe();
-			//std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			GOL.print();
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 		GOL.describe();
 	}

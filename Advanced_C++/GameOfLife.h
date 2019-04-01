@@ -21,6 +21,9 @@ private:
 	static unsigned long iterCounter;
 	unsigned int width;
 	unsigned int height;
+	std::string author;
+	std::string name;
+	std::string description;
 	bool constant;
 	class Cell
 	{

@@ -35,4 +35,9 @@
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Gosper_glider_gun.rle">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

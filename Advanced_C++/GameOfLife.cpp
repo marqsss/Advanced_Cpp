@@ -71,7 +71,99 @@ bool GameOfLife::createFromRLE(fs::path p)
 	std::ifstream f(p.c_str());
 	if (f.is_open())
 	{
-		// read RLE-format
+		std::string s;
+		unsigned int x, y;
+		while (!f.eof())
+		{
+			std::getline(f, s);
+			if (s.at(0) == '#')
+			{
+				if (s.at(1) == 'N')
+					name += s.substr(3, s.size());
+				else if (s.at(1) == 'O')
+					author += s.substr(3, s.size());
+				else if (s.at(1) == 'C' || s.at(1) == 'c')
+					description += s.substr(3, s.size()) += '\n';
+				// else ignore - invalid input
+			}
+			else if (s.at(0) == 'x')
+			{
+				x = std::stoul(s.substr(s.find_first_of("0123456789"),
+					s.find_first_of(',') - s.find_first_of("0123456789")));
+				y = std::stoul(s.substr(s.find_first_of("0123456789", s.find_first_of(',')),
+					s.find_first_of(',', s.find_first_of(',') + 1) -
+					s.find_first_of("0123456789", s.find_first_of(','))));
+				std::string rule1 = s.substr(s.find_last_of('=') + 2,
+					s.find_last_of('/') - s.find_last_of('=') - 2);
+				std::string rule2 = s.substr(s.find_last_of('/') + 1, s.size());
+				if (rule1.at(0) == 'B')
+					for (int arr = std::stoi(rule1.substr(1)); arr > 0; arr /= 10)
+						reviveMap.insert(reviveMap.begin(), arr % 10);
+				else if (rule1.at(0) == 'S')
+					for (int arr = std::stoi(rule1.substr(1)); arr > 0; arr /= 10)
+						lifeMap.insert(lifeMap.begin(), arr % 10);
+				if (rule2.at(0) == 'B')
+					for (int arr = std::stoi(rule2.substr(1)); arr > 0; arr /= 10)
+						reviveMap.insert(reviveMap.begin(), arr % 10);
+				else if (rule2.at(0) == 'S')
+					for (int arr = std::stoi(rule2.substr(1)); arr > 0; arr /= 10)
+						lifeMap.insert(lifeMap.begin(), arr % 10);
+				// else ignore - invalid input
+				// print 'commented' data
+				printf("%s\n%s\n%s", name.c_str(), author.c_str(), description.c_str());
+			}
+			else
+			{
+				// ensure map size
+				if (width < y)
+				{
+					width = y;
+					cellMap.resize(width);
+				}
+				if (height < x)
+				{
+					height = x;
+					for (unsigned int i = 0; i < cellMap.size(); i++)
+						cellMap.at(i).resize(height);
+				}
+				// encode
+				unsigned int offset = 0, aliveQueue = 0, k = 0;
+				for (unsigned int i = 0; i < cellMap.size(); i++)
+					for (unsigned int j = 0; j < cellMap.at(i).size(); j++)
+					{
+						k = s.find_first_not_of("0123456789", offset);
+						if (k == std::string::npos)
+						{
+							offset = 0;
+							std::getline(f, s); // new line of data
+							k = s.find_first_not_of("0123456789", offset);
+						}
+						if (s.at(k) == '$')
+						{
+							i += (k - offset) < 1 ? 0 : stoul(s.substr(offset, k - offset)) - 1;
+							offset = k + 1;
+							k = s.find_first_not_of("0123456789", offset);
+						}
+						if (s.at(k) == 'b')
+						{
+							j += (k - offset) < 1 ? 0 : stoul(s.substr(offset, k - offset)) - 1;
+							offset = k + 1;
+						}
+						else if (s.at(k) == 'o')
+						{
+							aliveQueue = (k - offset) < 1 ? 1 : stoul(s.substr(offset, k - offset));
+							offset = k + 1;
+							for (; aliveQueue > 0; --aliveQueue)
+							{
+								printf("%d, %d\t", i, j);
+								cellMap.at(i).at(j).status = true;
+								if (aliveQueue - 1)
+									++j;
+							}
+						}
+					}
+			}
+		}
 	}
 	else
 		return false;
