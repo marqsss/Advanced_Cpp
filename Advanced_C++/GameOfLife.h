@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+#include <SFML/Window.hpp>
 
 namespace fs = std::filesystem;
 
@@ -14,6 +15,8 @@ public:
 	GameOfLife(std::string);
 	bool create(std::string);
 	bool createFromRLE(fs::path);
+	bool offsetFromRLE(fs::path, unsigned int, unsigned int);
+	bool initialize(sf::Vector2u, fs::path, sf::Vector2u);
 	void print();
 	void describe();
 	bool run(unsigned int iterations = 1, bool safetycheck = true);

@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 #include "GameOfLife.h"
 
 int main()
@@ -34,7 +36,7 @@ int main()
 			valid = true;
 			break;
 		case 5:
-			GOL.createFromRLE("../Advanced_C++/Gosper_glider_gun.rle");
+			GOL.initialize(sf::Vector2u(30, 80),"../Advanced_C++/Gosper_glider_gun.rle", sf::Vector2u(10, 10));
 			valid = true;
 			break;
 		default:
@@ -56,7 +58,7 @@ int main()
 		{
 			GOL.describe();
 			GOL.print();
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 		GOL.describe();
 	}
