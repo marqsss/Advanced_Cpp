@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
-#include <SFML/Window.hpp>
+#include <sfml/window.hpp>
 #include <SFML/Graphics.hpp>
 #include "GameOfLife.h"
 

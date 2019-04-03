@@ -6,21 +6,19 @@
 #include <filesystem>
 #include <SFML/Window.hpp>
 
-namespace fs = std::filesystem;
-
 class GameOfLife
 {
 public:
 	GameOfLife() {};
 	GameOfLife(std::string);
 	bool create(std::string);
-	bool createFromRLE(fs::path);
-	bool offsetFromRLE(fs::path, unsigned int, unsigned int);
-	bool initialize(sf::Vector2u, fs::path, sf::Vector2u);
+	bool createFromRLE(std::filesystem::path);
+	bool offsetFromRLE(std::filesystem::path, unsigned int, unsigned int);
+	bool initialize(sf::Vector2u, std::filesystem::path, sf::Vector2u);
 	void print();
 	void describe();
 	bool run(unsigned int iterations = 1, bool safetycheck = true);
-private:
+protected:
 	static unsigned long iterCounter;
 	unsigned int width;
 	unsigned int height;
@@ -35,10 +33,13 @@ private:
 		bool status;
 	};
 	std::vector<std::vector<Cell> > cellMap;
+	std::vector<std::vector<sf::Vector2u> > updates;
 	std::vector<unsigned int> lifeMap;
 	std::vector<unsigned int> reviveMap;
-	inline bool update(Cell& cell);
+	bool update(unsigned int, unsigned int);
 	unsigned int checkNeighbours(unsigned int, unsigned int);
+	inline void resizeMap(unsigned int, unsigned int);
+	inline void resizeMap(sf::Vector2u);
 };
 
 #endif

@@ -32,15 +32,9 @@ bool GameOfLife::create(std::string filename)
 		// setting matrix size
 		file >> s;
 		width = std::stoul(s);
-		cellMap.resize(width);
 		file >> s;
 		height = std::stoul(s);
-		for (unsigned int i = 0; i < cellMap.size(); i++)
-		{
-			cellMap.at(i).resize(height);
-			for (unsigned int j = 0; j < cellMap.at(i).size(); j++)
-				cellMap.at(i).at(j).status = false;
-		}
+		resizeMap(width, height);
 
 
 		// TODO - recognizing pre-made patterns
@@ -66,7 +60,7 @@ bool GameOfLife::create(std::string filename)
 	return true;
 }
 
-bool GameOfLife::createFromRLE(fs::path p)
+bool GameOfLife::createFromRLE(std::filesystem::path p)
 {
 	std::ifstream f(p.c_str());
 	if (f.is_open())
@@ -115,16 +109,11 @@ bool GameOfLife::createFromRLE(fs::path p)
 			else
 			{
 				// ensure map size
-				if (width < y)
+				if ((width < y)||(height < x))
 				{
 					width = y;
-					cellMap.resize(width);
-				}
-				if (height < x)
-				{
 					height = x;
-					for (unsigned int i = 0; i < cellMap.size(); i++)
-						cellMap.at(i).resize(height);
+					resizeMap(width, height);
 				}
 				// encode
 				unsigned int offset = 0, aliveQueue = 0, k = 0;
@@ -171,7 +160,7 @@ bool GameOfLife::createFromRLE(fs::path p)
 	return true;
 }
 
-bool GameOfLife::offsetFromRLE(fs::path p, unsigned int offsetX, unsigned int offsetY)
+bool GameOfLife::offsetFromRLE(std::filesystem::path p, unsigned int offsetX, unsigned int offsetY)
 {
 	std::ifstream f(p.c_str());
 	if (f.is_open())
@@ -220,19 +209,15 @@ bool GameOfLife::offsetFromRLE(fs::path p, unsigned int offsetX, unsigned int of
 			else
 			{
 				// ensure map size
-				if (height < y + offsetY)
+				if ((width < y) || (height < x))
 				{
-					height = y + offsetY;
-					cellMap.resize(height);
-				}
-				if (width < x + offsetX)
-				{
-					width = x + offsetX;
-					for (unsigned int i = 0; i < cellMap.size(); i++)
-						cellMap.at(i).resize(width);
+					width = y;
+					height = x;
+					resizeMap(width, height);
 				}
 				// encode
-				unsigned int offset = 0, aliveQueue = 0, k = 0;
+				unsigned int offset = 0, aliveQueue = 0;
+				size_t k = 0;
 				for (unsigned int i = offsetY; i <= offsetY+y; i++)
 					for (unsigned int j = offsetX; j <= offsetX+x; j++)
 					{
@@ -261,7 +246,7 @@ bool GameOfLife::offsetFromRLE(fs::path p, unsigned int offsetX, unsigned int of
 							offset = k + 1;
 							for (; aliveQueue > 0; --aliveQueue)
 							{
-								printf("%d, %d\t", i, j); // debug
+								// printf("%d, %d\t", i, j); // debug
 								cellMap.at(i).at(j).status = true;
 								if (aliveQueue - 1)
 									++j;
@@ -278,13 +263,11 @@ bool GameOfLife::offsetFromRLE(fs::path p, unsigned int offsetX, unsigned int of
 
 }
 
-bool GameOfLife::initialize(sf::Vector2u size, fs::path p, sf::Vector2u offset)
+bool GameOfLife::initialize(sf::Vector2u size, std::filesystem::path p, sf::Vector2u offset)
 {
 	height = size.x;
-	cellMap.resize(size.x);
 	width = size.y;
-	for (auto &i : cellMap)
-		i.resize(size.y);
+	resizeMap(width, height);
 	return offsetFromRLE(p, offset.x, offset.y);
 }
 
@@ -331,6 +314,10 @@ bool GameOfLife::run(unsigned int iterations, bool safetycheck)
 {
 	if (!constant)
 	{
+		if (iterCounter < 1000)
+			updates.emplace_back();
+		else
+			updates.at(iterCounter % 1000).clear();
 		constant = true;
 		if (safetycheck)
 			for (unsigned int i = 0; i < cellMap.size(); i++)
@@ -338,7 +325,7 @@ bool GameOfLife::run(unsigned int iterations, bool safetycheck)
 					cellMap.at(i).at(j).neighbours = checkNeighbours(i, j);
 		for (unsigned int i = 0; i < cellMap.size(); i++)
 			for (unsigned int j = 0; j < cellMap.at(0).size(); j++)
-				if (update(cellMap.at(i).at(j)))
+				if (update(i, j))
 					constant = false;
 		iterCounter++;
 	}
@@ -347,9 +334,10 @@ bool GameOfLife::run(unsigned int iterations, bool safetycheck)
 
 // PRIVATE --------------------------------------------------------------------
 
-inline bool GameOfLife::update(Cell& cell)
+bool GameOfLife::update(unsigned int i, unsigned int j)
 {
 	bool changed = false;
+	auto &cell = cellMap.at(i).at(j);
 	if (cell.status)
 	{
 		bool newStatus = false;
@@ -358,6 +346,8 @@ inline bool GameOfLife::update(Cell& cell)
 				newStatus = true;
 		if (!newStatus)
 			changed = true;
+		if (cell.status != newStatus)
+			updates.at(iterCounter % 1000).emplace_back(sf::Vector2u(i, j));
 		cell.status = newStatus;
 	}
 	else
@@ -369,6 +359,8 @@ inline bool GameOfLife::update(Cell& cell)
 				newStatus = true;
 				changed = true;
 			}
+		if (cell.status != newStatus)
+			updates.at(iterCounter % 1000).emplace_back(sf::Vector2u(i, j));
 		cell.status = newStatus;
 	}
 	return changed;
@@ -413,4 +405,16 @@ unsigned int GameOfLife::checkNeighbours(unsigned int x, unsigned int y)
 				j = tempj;
 		}
 	return res;
+}
+
+void GameOfLife::resizeMap(unsigned int w, unsigned int h)
+{
+	cellMap.resize(h);
+	for (auto &i : cellMap)
+		i.resize(w);
+}
+
+void GameOfLife::resizeMap(sf::Vector2u size)
+{
+	resizeMap(size.x, size.y);
 }
