@@ -45,5 +45,8 @@
     <None Include="Gosper_glider_gun.rle">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Queen_Bee_Shuttle.rle">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

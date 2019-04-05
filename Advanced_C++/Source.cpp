@@ -6,12 +6,13 @@
 #include <sfml/window.hpp>
 #include <SFML/Graphics.hpp>
 #include "GameOfLife.h"
+#include "SFGOL.h"
 
 int main()
 {
 	int choice = -1;
 	bool valid = false;
-	GameOfLife GOL;
+	SFGOL GOL;
 	while (!valid)
 		switch (choice)
 		{
@@ -36,7 +37,11 @@ int main()
 			valid = true;
 			break;
 		case 5:
-			GOL.initialize(sf::Vector2u(30, 80),"../Advanced_C++/Gosper_glider_gun.rle", sf::Vector2u(10, 10));
+			GOL.initialize(sf::Vector2u(30, 80), "../Advanced_C++/Gosper_glider_gun.rle", sf::Vector2u(10, 10));
+			valid = true;
+			break;
+		case 6:
+			GOL.initialize(sf::Vector2u(40, 80), "../Advanced_C++/Queen_Bee_Shuttle.rle", sf::Vector2u(10, 10));
 			valid = true;
 			break;
 		default:
@@ -51,14 +56,39 @@ int main()
 
 	if (choice)
 	{
-		GOL.describe();
-		GOL.print();
-
-		while (GOL.run())
+		GOL.texOffset = sf::Vector2u(50, 50);
+		sf::RenderWindow window(sf::VideoMode(800, 600), "Game of Life", sf::Style::Default);
+		while (window.isOpen())
 		{
-			GOL.describe();
-			GOL.print();
-			//std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			sf::Event event;
+			while (window.pollEvent(event))
+			{
+				if (event.type == sf::Event::KeyPressed)
+					switch (event.key.code)
+					{
+					case sf::Keyboard::Space: // pause/resume
+						GOL.pause();
+						break;
+					case sf::Keyboard::Z: // prev (if paused)
+						break;
+					case sf::Keyboard::B: // next (if paused)
+						break;
+					}
+				if (event.type == sf::Event::Closed)
+					window.close();
+			}
+
+			if (!GOL.getPause())
+			{
+				GOL.describe();
+				GOL.print();
+				GOL.run();
+				std::this_thread::sleep_for(std::chrono::milliseconds(200));
+			}
+
+			window.clear(sf::Color(0, 0, 128, 255));
+			window.draw(GOL);
+			window.display();
 		}
 		GOL.describe();
 	}

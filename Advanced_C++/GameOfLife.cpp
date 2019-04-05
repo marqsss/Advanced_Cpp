@@ -209,7 +209,7 @@ bool GameOfLife::offsetFromRLE(std::filesystem::path p, unsigned int offsetX, un
 			else
 			{
 				// ensure map size
-				if ((width < y) || (height < x))
+				if ((width < x) || (height < y))
 				{
 					width = y;
 					height = x;
@@ -246,7 +246,7 @@ bool GameOfLife::offsetFromRLE(std::filesystem::path p, unsigned int offsetX, un
 							offset = k + 1;
 							for (; aliveQueue > 0; --aliveQueue)
 							{
-								// printf("%d, %d\t", i, j); // debug
+								printf("%d, %d\t", i, j); // debug
 								cellMap.at(i).at(j).status = true;
 								if (aliveQueue - 1)
 									++j;
