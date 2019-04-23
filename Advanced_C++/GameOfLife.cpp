@@ -314,10 +314,6 @@ bool GameOfLife::run(unsigned int iterations, bool safetycheck)
 {
 	if (!constant)
 	{
-		if (iterCounter < 1000)
-			updates.emplace_back();
-		else
-			updates.at(iterCounter % 1000).clear();
 		constant = true;
 		if (safetycheck)
 			for (unsigned int i = 0; i < cellMap.size(); i++)
@@ -346,8 +342,6 @@ bool GameOfLife::update(unsigned int i, unsigned int j)
 				newStatus = true;
 		if (!newStatus)
 			changed = true;
-		if (cell.status != newStatus)
-			updates.at(iterCounter % 1000).emplace_back(sf::Vector2u(i, j));
 		cell.status = newStatus;
 	}
 	else
@@ -359,8 +353,6 @@ bool GameOfLife::update(unsigned int i, unsigned int j)
 				newStatus = true;
 				changed = true;
 			}
-		if (cell.status != newStatus)
-			updates.at(iterCounter % 1000).emplace_back(sf::Vector2u(i, j));
 		cell.status = newStatus;
 	}
 	return changed;

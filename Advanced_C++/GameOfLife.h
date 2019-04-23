@@ -33,7 +33,6 @@ protected:
 		bool status;
 	};
 	std::vector<std::vector<Cell> > cellMap;
-	std::vector<std::vector<sf::Vector2u> > updates;
 	std::vector<unsigned int> lifeMap;
 	std::vector<unsigned int> reviveMap;
 	bool update(unsigned int, unsigned int);

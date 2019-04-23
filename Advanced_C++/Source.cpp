@@ -21,47 +21,33 @@ int main()
 			valid = true;
 			break;
 		case 1:
-			GOL.create("../Advanced_C++/input2.txt");
+			GOL.initialize(sf::Vector2u(30, 80), sf::Vector2f(10, 10));
+			GOL.insertFile("../Advanced_C++/Gosper_glider_gun.rle", sf::Vector2u(10, 10));
 			valid = true;
 			break;
 		case 2:
-			GOL.create("../Advanced_C++/test_input.txt");
-			valid = true;
-			break;
-		case 3:
-			GOL.create("../Advanced_C++/Gosper_glider_gun.txt");
-			valid = true;
-			break;
-		case 4:
-			GOL.create("../Advanced_C++/Diehard.txt");
-			valid = true;
-			break;
-		case 5:
-			GOL.initialize(sf::Vector2u(30, 80), "../Advanced_C++/Gosper_glider_gun.rle", sf::Vector2u(10, 10));
-			valid = true;
-			break;
-		case 6:
-			GOL.initialize(sf::Vector2u(40, 80), "../Advanced_C++/Queen_Bee_Shuttle.rle", sf::Vector2u(10, 10));
+			GOL.initialize(sf::Vector2u(40, 80), sf::Vector2f(10, 10));
+			GOL.insertFile("../Advanced_C++/Queen_Bee_Shuttle.rle", sf::Vector2u(10, 10));
 			valid = true;
 			break;
 		default:
 			printf("Choose input file:\n\
-			1. Simple demonstration (block + blinker)\n\
-			2. Smallest immortal arrangement\n\
-			3. Gosper glider gun\n\
-			4. Diehard (dies after 130 steps)\n");
+			1. Gosper Glider Gun\n\
+			2. Queen Bee Shuttle\n");
 			std::cin >> choice;
 			break;
 		}
 
 	// initial state
 	GOL.describe();
-	GOL.print();
+	//GOL.print();
 
 	if (choice)
 	{
-		GOL.texOffset = sf::Vector2u(50, 50);
-		sf::RenderWindow window(sf::VideoMode(800, 600), "Game of Life", sf::Style::Default);
+		sf::ContextSettings settings;
+		settings.antialiasingLevel = 0;
+		sf::RenderWindow window(sf::VideoMode(800, 600), "Game of Life", sf::Style::Default, settings);
+		window.setView(sf::View(sf::FloatRect(0, 0, 200, 150)));
 		while (window.isOpen())
 		{
 			sf::Event event;
@@ -72,21 +58,22 @@ int main()
 					{
 					case sf::Keyboard::Space: // pause/resume
 						GOL.pause();
+						GOL.describe();
 						break;
 					case sf::Keyboard::Z: // prev (if paused)
 						if (GOL.paused())
 						{
 							GOL.unrun();
 							GOL.describe();
-							GOL.print();
+							//GOL.print();
 						}
 						break;
 					case sf::Keyboard::B: // next (if paused)
 						if (GOL.paused())
 						{
-							GOL.run();
+							GOL.unrun(-1);
 							GOL.describe();
-							GOL.print();
+							//GOL.print();
 						}
 						break;
 					}
@@ -97,15 +84,13 @@ int main()
 			if (!GOL.paused())
 			{
 				GOL.run();
-				GOL.describe();
-				GOL.print();
+				//GOL.describe();
+				//GOL.print();
 				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			}
 
-			GOL.visualize();
-			sf::Sprite s(GOL.getTex());
 			window.clear(sf::Color(0, 0, 128, 255));
-			window.draw(s);
+			window.draw(GOL);
 			window.display();
 		}
 		GOL.describe();
