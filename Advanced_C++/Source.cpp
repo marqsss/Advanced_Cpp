@@ -54,6 +54,10 @@ int main()
 			break;
 		}
 
+	// initial state
+	GOL.describe();
+	GOL.print();
+
 	if (choice)
 	{
 		GOL.texOffset = sf::Vector2u(50, 50);
@@ -70,24 +74,38 @@ int main()
 						GOL.pause();
 						break;
 					case sf::Keyboard::Z: // prev (if paused)
+						if (GOL.paused())
+						{
+							GOL.unrun();
+							GOL.describe();
+							GOL.print();
+						}
 						break;
 					case sf::Keyboard::B: // next (if paused)
+						if (GOL.paused())
+						{
+							GOL.run();
+							GOL.describe();
+							GOL.print();
+						}
 						break;
 					}
 				if (event.type == sf::Event::Closed)
 					window.close();
 			}
 
-			if (!GOL.getPause())
+			if (!GOL.paused())
 			{
+				GOL.run();
 				GOL.describe();
 				GOL.print();
-				GOL.run();
 				std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			}
 
+			GOL.visualize();
+			sf::Sprite s(GOL.getTex());
 			window.clear(sf::Color(0, 0, 128, 255));
-			window.draw(GOL);
+			window.draw(s);
 			window.display();
 		}
 		GOL.describe();
