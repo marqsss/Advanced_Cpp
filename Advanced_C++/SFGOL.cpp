@@ -4,6 +4,7 @@
 #include <fstream>
 
 unsigned long SFGOL::totalIterCounter;
+unsigned long SFGOL::lastValid;
 
 SFGOL::SFGOL()
 {
@@ -100,12 +101,9 @@ bool SFGOL::run(unsigned int iterations, bool safetycheck)
 				else
 					texMap.update(dead_cell, 1, 1, j, i);
 	}
-	if (!constant && totalIterCounter == iterCounter)
+	if (!constant && totalIterCounter == iterCounter) // new iteration
 	{
-		if (iterCounter < 1000)
-			updates.emplace_back();
-		else
-			updates.at(iterCounter % 1000).clear();
+		updates.at(iterCounter % 1000).clear();
 		constant = true;
 		if (safetycheck)
 			for (unsigned int i = 0; i < cellMap.size(); i++)
@@ -117,6 +115,7 @@ bool SFGOL::run(unsigned int iterations, bool safetycheck)
 					constant = false;
 		++iterCounter;
 		++totalIterCounter;
+		++lastValid;
 	}
 	else if (!constant)
 	{
@@ -148,6 +147,38 @@ void SFGOL::describe()
 		printf("The Game is in a constant state.\n");
 }
 
+bool SFGOL::setCell(unsigned int i, unsigned int j, status newStatus, bool overwriteUpdates)
+{
+	if (j < height&& i < width)
+		if (newStatus == OPPOSITE)
+		{
+			newStatus = status(static_cast<int>(!cellMap.at(j).at(i).status));
+			texMap.update(newStatus ? live_cell : dead_cell, 1, 1, i, j);
+			cellMap.at(j).at(i).status = newStatus;
+			for (auto k = 0; k < updates.at(iterCounter).size(); ++k)
+				if (updates.at(iterCounter).at(k).x == i && updates.at(iterCounter).at(k).y == j)
+					updates.at(iterCounter).erase(updates.at(iterCounter).begin() + k);
+			lastValid = iterCounter;
+			return true;
+		}
+		else if (cellMap.at(j).at(i).status != static_cast<bool>(newStatus))
+		{
+			texMap.update(newStatus ? live_cell : dead_cell, 1, 1, i, j);
+			cellMap.at(j).at(i).status = newStatus;
+			for (auto k = 0; k < updates.at(iterCounter).size(); ++k)
+				if (updates.at(iterCounter).at(k).x == i && updates.at(iterCounter).at(k).y == j)
+					updates.at(iterCounter).erase(updates.at(iterCounter).begin() + k);
+			lastValid = iterCounter;
+			return true;
+		}
+	return false;
+}
+
+sf::Vector2f SFGOL::getSpriteOffset()
+{
+	return visualization.getPosition();
+}
+
 void SFGOL::visualize()
 {
 	visualization.setTexture(texMap, true);
@@ -157,7 +188,7 @@ void SFGOL::unrun(int iterations, bool safetycheck)
 {
 	if (!iterations)
 		return;
-	if (iterations < 0)
+	if (iterations < 0 && lastValid == iterCounter)
 	{
 		//forwards
 		for (auto k = iterations; k < 0; ++k)
@@ -285,18 +316,18 @@ bool SFGOL::offsetFromRLE(std::filesystem::path p, unsigned int offsetX, unsigne
 						{
 							i += (k - offset) < 1 ? 0 : stoul(s.substr(offset, k - offset)) - 1;
 							//j = cellMap.at(i).size();
-							offset = k + 1;
+							offset = static_cast<unsigned int>(k) + 1;
 							continue;
 						}
 						if (s.at(k) == 'b') // jump horizontally
 						{
 							j += (k - offset) < 1 ? 0 : stoul(s.substr(offset, k - offset)) - 1;
-							offset = k + 1;
+							offset = static_cast<unsigned int>(k) + 1;
 						}
 						else if (s.at(k) == 'o') // revive some cells
 						{
 							aliveQueue = (k - offset) < 1 ? 1 : stoul(s.substr(offset, k - offset));
-							offset = k + 1;
+							offset = static_cast<unsigned int>(k) + 1;
 							for (; aliveQueue > 0; --aliveQueue)
 							{
 								//printf("%d, %d\t", i, j); // debug
@@ -325,7 +356,7 @@ bool SFGOL::initialize(sf::Vector2u size, sf::Vector2f spriteOffset)
 	return true;
 }
 
-bool SFGOL::insertFile(std::filesystem::path p, sf::Vector2u offset)
+bool SFGOL::insertFromFile(std::filesystem::path p, sf::Vector2u offset)
 {
 	return offsetFromRLE(p, offset.x, offset.y);
 }
