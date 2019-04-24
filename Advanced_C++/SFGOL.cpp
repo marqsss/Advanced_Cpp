@@ -16,6 +16,7 @@ SFGOL::SFGOL()
 	for (int i = 0; i < 4; i++)
 		live_cell[i] = 255;
 	is_paused = false;
+	dir = true;
 }
 
 bool SFGOL::pause()
@@ -92,7 +93,7 @@ bool SFGOL::update(unsigned int i, unsigned int j)
 
 bool SFGOL::run(unsigned int iterations, bool safetycheck)
 {
-	if (!totalIterCounter) // first iteration
+	if (dir && !totalIterCounter) // first iteration
 	{
 		for (unsigned int i = 0; i < cellMap.size(); i++)
 			for (unsigned int j = 0; j < cellMap.at(0).size(); j++)
@@ -101,7 +102,7 @@ bool SFGOL::run(unsigned int iterations, bool safetycheck)
 				else
 					texMap.update(dead_cell, 1, 1, j, i);
 	}
-	if (!constant && totalIterCounter == iterCounter) // new iteration
+	if (dir && !constant ) // new iteration
 	{
 		updates.at(iterCounter % 1000).clear();
 		constant = true;
@@ -113,9 +114,10 @@ bool SFGOL::run(unsigned int iterations, bool safetycheck)
 			for (unsigned int j = 0; j < cellMap.at(0).size(); j++)
 				if (update(i, j))
 					constant = false;
+		if (totalIterCounter == iterCounter)
+			++totalIterCounter;
 		++iterCounter;
-		++totalIterCounter;
-		++lastValid;
+		lastValid = iterCounter;
 	}
 	else if (!constant)
 	{
@@ -179,21 +181,34 @@ sf::Vector2f SFGOL::getSpriteOffset()
 	return visualization.getPosition();
 }
 
+bool SFGOL::contains(sf::Vector2i point)
+{
+	return visualization.getGlobalBounds().contains(point.x, point.y);
+}
+bool SFGOL::contains(sf::Vector2f point)
+{
+	return visualization.getGlobalBounds().contains(point);
+}
+bool SFGOL::contains(int x, int y)
+{
+	return visualization.getGlobalBounds().contains(x, y);
+}
+
 void SFGOL::visualize()
 {
 	visualization.setTexture(texMap, true);
 }
 
-void SFGOL::unrun(int iterations, bool safetycheck)
+bool SFGOL::unrun(int iterations, bool safetycheck)
 {
 	if (!iterations)
-		return;
-	if (iterations < 0 && lastValid == iterCounter)
+		return false;
+	if (iterations < 0 && iterCounter < totalIterCounter)
 	{
 		//forwards
 		for (auto k = iterations; k < 0; ++k)
 		{
-			if (iterCounter == totalIterCounter)
+			if (lastValid < totalIterCounter)
 				run();
 			else
 			{
@@ -221,7 +236,10 @@ void SFGOL::unrun(int iterations, bool safetycheck)
 		for (auto k = 0; k < iterations; ++k)
 		{
 			if (iterCounter + 999 == totalIterCounter || iterCounter == 0)
+			{
 				std::cerr << "You cannot go backwards anymore. Try moving forward." << std::endl;
+				return false;
+			}
 			else
 			{
 				--iterCounter;
@@ -242,6 +260,8 @@ void SFGOL::unrun(int iterations, bool safetycheck)
 			}
 		}
 	}
+	visualize();
+	return true;
 }
 
 bool SFGOL::offsetFromRLE(std::filesystem::path p, unsigned int offsetX, unsigned int offsetY)
