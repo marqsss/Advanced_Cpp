@@ -167,11 +167,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLife.h" />
+    <ClInclude Include="GOL1D.h" />
     <ClInclude Include="QuickButtons.h" />
     <ClInclude Include="SFGOL.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameOfLife.cpp" />
+    <ClCompile Include="GOL1D.cpp" />
     <ClCompile Include="QuickButtons.cpp" />
     <ClCompile Include="SFGOL.cpp" />
     <ClCompile Include="Source.cpp" />
