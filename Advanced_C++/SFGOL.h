@@ -32,7 +32,7 @@ public:
 	void setScale(float x, float y) { visualization.setScale(x, y); }
 	sf::Vector2f getScale() { return visualization.getScale(); }
 	sf::Texture& getTex();
-private:
+protected:
 	void resizeMap(unsigned int, unsigned int);
 	void resizeMap(sf::Vector2u);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;

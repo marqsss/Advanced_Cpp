@@ -170,12 +170,14 @@
     <ClInclude Include="GOL1D.h" />
     <ClInclude Include="QuickButtons.h" />
     <ClInclude Include="SFGOL.h" />
+    <ClInclude Include="SFGOLConcurrent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameOfLife.cpp" />
     <ClCompile Include="GOL1D.cpp" />
     <ClCompile Include="QuickButtons.cpp" />
     <ClCompile Include="SFGOL.cpp" />
+    <ClCompile Include="SFGOLConcurrent.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
