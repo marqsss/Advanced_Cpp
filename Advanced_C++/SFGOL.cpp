@@ -5,6 +5,8 @@
 
 unsigned long SFGOL::totalIterCounter;
 unsigned long SFGOL::lastValid;
+sf::Uint8* SFGOL::dead_cell;
+sf::Uint8* SFGOL::live_cell;
 
 SFGOL::SFGOL()
 {

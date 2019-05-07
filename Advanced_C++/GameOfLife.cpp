@@ -6,6 +6,7 @@
 #include <algorithm>
 
 unsigned long GameOfLife::iterCounter;
+bool GameOfLife::constant;
 
 GameOfLife::GameOfLife(std::string filename)
 {

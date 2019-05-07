@@ -25,7 +25,7 @@ protected:
 	std::string author;
 	std::string name;
 	std::string description;
-	bool constant;
+	static bool constant;
 	class Cell
 	{
 	public:

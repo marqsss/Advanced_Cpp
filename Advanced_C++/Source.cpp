@@ -8,13 +8,14 @@
 #include "GameOfLife.h"
 #include "SFGOL.h"
 #include "GOL1D.h"
+#include "SFGOLConcurrent.h"
 
 int main()
 {
 	int choice = -1;
 	bool valid = false;
 	unsigned int w, i, r;
-	SFGOL GOL;
+	SFGOLConcurrent GOL;
 	GOL1D oneD;
 	while (!valid)
 		switch (choice)
@@ -203,7 +204,7 @@ int main()
 					GOL.direction() ? GOL.run() : GOL.unrun();
 					//GOL.describe();
 					//GOL.print();
-					std::this_thread::sleep_for(std::chrono::milliseconds(200));
+					//std::this_thread::sleep_for(std::chrono::milliseconds(200));
 				}
 
 				window.clear(sf::Color(0, 0, 128, 255));

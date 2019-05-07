@@ -32,6 +32,10 @@ public:
 	void setScale(float x, float y) { visualization.setScale(x, y); }
 	sf::Vector2f getScale() { return visualization.getScale(); }
 	sf::Texture& getTex();
+
+	static sf::Uint8* dead_cell;
+	static sf::Uint8* live_cell;
+
 protected:
 	void resizeMap(unsigned int, unsigned int);
 	void resizeMap(sf::Vector2u);
@@ -43,8 +47,6 @@ protected:
 	std::vector<std::vector<sf::Vector2u> > updates;
 	sf::Texture texMap;
 	sf::Sprite visualization;
-	sf::Uint8* dead_cell;
-	sf::Uint8* live_cell;
 	bool is_paused;
 	bool dir;
 };
