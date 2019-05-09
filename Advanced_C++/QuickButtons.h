@@ -10,6 +10,7 @@ class QuickButtons
 {
 public:
 	bool newButton(std::filesystem::path, sf::IntRect, sf::Vector2f);
+	auto& getButton(unsigned int i) { return buttons.at(i); }
 private:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 

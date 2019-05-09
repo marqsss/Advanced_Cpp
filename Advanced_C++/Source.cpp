@@ -9,9 +9,12 @@
 #include "SFGOL.h"
 #include "GOL1D.h"
 #include "SFGOLConcurrent.h"
+#include "SimpleFPS.h"
+#include "QuickButtons.h"
 
 int main()
 {
+	SimpleFPS fps;
 	int choice = -1;
 	bool valid = false;
 	unsigned int w, i, r;
@@ -60,16 +63,12 @@ int main()
 		//GOL.print();
 
 		// buttons setup: playback, back, pause, forward, play
-		std::vector<sf::Texture> butTex;
-		butTex.resize(5);
-		std::vector<sf::Sprite> butSpr;
-		butSpr.resize(5);
+		QuickButtons butSpr;
 		for (auto i = 0; i < 5; ++i)
 		{
-			if (butTex.at(i).loadFromFile("../Advanced_C++/resources/graphics/buttons.bmp", sf::IntRect(100 * i, 0, 100, 100)))
-				butSpr.at(i).setTexture(butTex.at(i), true);
-			butSpr.at(i).setScale(.5, .5);
-			butSpr.at(i).setPosition(540 + 50 * i, 10);
+			butSpr.newButton("../Advanced_C++/resources/graphics/buttons.bmp",
+				sf::IntRect(100 * i, 0, 100, 100), sf::Vector2f(540 + 50 * i, 10));
+			butSpr.getButton(i).setScale(.5, .5);
 		}
 
 
@@ -144,14 +143,14 @@ int main()
 							GOL.setCell(static_cast<unsigned int>(mousePos.x*GOL.getScale().x - GOL.getSpriteOffset().x),
 								static_cast<unsigned int>(mousePos.y*GOL.getScale().y - GOL.getSpriteOffset().y), SFGOL::OPPOSITE);
 						//pause
-						if (butSpr.at(2).getGlobalBounds().contains(mousePos))
+						if (butSpr.getButton(2).getGlobalBounds().contains(mousePos))
 						{
 							printf("pause\n");
 							GOL.pause();
 							GOL.describe();
 						}
 						//playback
-						if (butSpr.at(0).getGlobalBounds().contains(mousePos))
+						if (butSpr.getButton(0).getGlobalBounds().contains(mousePos))
 						{
 							printf("playback\n");
 							if (GOL.paused())
@@ -161,7 +160,7 @@ int main()
 							}
 						}
 						//back
-						if (butSpr.at(1).getGlobalBounds().contains(mousePos))
+						if (butSpr.getButton(1).getGlobalBounds().contains(mousePos))
 						{
 							printf("back\n");
 							if (GOL.paused())
@@ -172,7 +171,7 @@ int main()
 							}
 						}
 						//forward
-						if (butSpr.at(3).getGlobalBounds().contains(mousePos))
+						if (butSpr.getButton(3).getGlobalBounds().contains(mousePos))
 						{
 							printf("forward\n");
 							if (GOL.paused())
@@ -183,7 +182,7 @@ int main()
 							}
 						}
 						//play
-						if (butSpr.at(4).getGlobalBounds().contains(mousePos))
+						if (butSpr.getButton(4).getGlobalBounds().contains(mousePos))
 						{
 							printf("play\n");
 							if (GOL.paused())
@@ -210,25 +209,24 @@ int main()
 				window.clear(sf::Color(0, 0, 128, 255));
 				window.draw(GOL);
 				for (auto i = 0; i < 5; ++i)
-					window.draw(butSpr.at(i));
+					window.draw(butSpr.getButton(i));
 				window.display();
-			}
+
+				printf("FPS: %f\n", fps(60));
+			} // while window.is_open
+
 			GOL.describe();
 		} // window closes
 	} // standard GOL stuff
 	else // one-dimensional stuff
 	{
 		// button setup
-		std::vector<sf::Texture> butTex;
-		butTex.resize(5);
-		std::vector<sf::Sprite> butSpr;
-		butSpr.resize(5);
+		QuickButtons butSpr;
 		for (auto i = 0; i < 5; ++i)
 		{
-			if (butTex.at(i).loadFromFile("../Advanced_C++/resources/graphics/buttons.bmp", sf::IntRect(100 * i, 0, 100, 100)))
-				butSpr.at(i).setTexture(butTex.at(i), true);
-			butSpr.at(i).setScale(.5, .5);
-			butSpr.at(i).setPosition(540 + 50 * i, 10);
+			butSpr.newButton("../Advanced_C++/resources/graphics/buttons.bmp",
+				sf::IntRect(100 * i, 0, 100, 100), sf::Vector2f(540 + 50 * i, 10));
+			butSpr.getButton(i).setScale(.5, .5);
 		}
 		oneD.setScale(2, 2);
 
@@ -278,20 +276,20 @@ int main()
 							static_cast<unsigned int>(mousePos.y*GOL.getScale().y - GOL.getSpriteOffset().y), SFGOL::OPPOSITE);
 							*/
 							//pause
-					if (butSpr.at(2).getGlobalBounds().contains(mousePos))
+					if (butSpr.getButton(2).getGlobalBounds().contains(mousePos))
 					{
 						printf("pause\n");
 						oneD.pause(!oneD.isPaused());
 					}
 					//forward
-					if (butSpr.at(3).getGlobalBounds().contains(mousePos))
+					if (butSpr.getButton(3).getGlobalBounds().contains(mousePos))
 					{
 						printf("forward\n");
 						if (oneD.isPaused())
 							oneD.run();
 					}
 					//play
-					if (butSpr.at(4).getGlobalBounds().contains(mousePos))
+					if (butSpr.getButton(4).getGlobalBounds().contains(mousePos))
 					{
 						printf("play\n");
 						oneD.pause(false);
@@ -312,8 +310,10 @@ int main()
 			window.clear(sf::Color(0, 0, 128, 255));
 			window.draw(oneD);
 			for (auto i = 0; i < 5; ++i)
-				window.draw(butSpr.at(i));
+				window.draw(butSpr.getButton(i));
 			window.display();
+			printf("FPS: %f\n", fps());
+
 		} // window closes
 	} // one-dimensional stuff
 

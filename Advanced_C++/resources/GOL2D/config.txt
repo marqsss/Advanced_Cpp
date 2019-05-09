@@ -1,0 +1,9 @@
+# size of the game-of-life grid, width by height
+GRID_SIZE
+500
+500
+# rules of growth, survival and revival
+RULES
+6
+2
+# 

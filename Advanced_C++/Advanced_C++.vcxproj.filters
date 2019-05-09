@@ -33,6 +33,9 @@
     <ClCompile Include="SFGOLConcurrent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GOL2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLife.h">
@@ -48,6 +51,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SFGOLConcurrent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GOL2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GOL2DCell.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleFPS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
