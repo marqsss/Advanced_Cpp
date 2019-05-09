@@ -56,10 +56,10 @@
     <ClInclude Include="GOL2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GOL2DCell.h">
+    <ClInclude Include="SimpleFPS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleFPS.h">
+    <ClInclude Include="BooleanCell.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

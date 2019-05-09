@@ -163,13 +163,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>c:\SFML-2.5.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-system.lib;sfml-window.lib;sfml-graphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLife.h" />
     <ClInclude Include="GOL1D.h" />
     <ClInclude Include="GOL2D.h" />
-    <ClInclude Include="GOL2DCell.h" />
+    <ClInclude Include="BooleanCell.h" />
     <ClInclude Include="SimpleFPS.h" />
     <ClInclude Include="QuickButtons.h" />
     <ClInclude Include="SFGOL.h" />
