@@ -1,4 +1,4 @@
-# Neighborhood type: 2 = Moore
+# Neighborhood type: 1 = vonNeumann, 2 = Moore
 NEIGHBORS
 2
 # rule of cell surviving: S23 -> 2^(2-1)+2^(3-1)=6

@@ -351,10 +351,14 @@ int main()
 						switch (event.key.code)
 						{
 						case sf::Keyboard::Space: // pause/resume
-							//fall-through
-						case sf::Keyboard::C:
 							twoD.pause();
 							printf(twoD.is_paused() ? "paused\n" : "unpaused\n");
+							break;
+						case sf::Keyboard::R:
+							twoD.fillRandomly();
+							break;
+						case sf::Keyboard::C:
+							twoD.clear();
 							break;
 						}
 						break;
@@ -376,7 +380,7 @@ int main()
 
 				if (!twoD.is_paused())
 				{
-					//twoD.run();
+					twoD.run();
 				}
 
 				window.clear(sf::Color(0, 0, 128, 255));

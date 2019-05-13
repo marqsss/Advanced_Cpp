@@ -13,9 +13,12 @@ public:
 	bool config(std::filesystem::path, sf::Vector2u);
 	inline void flipCell(sf::Vector2u);
 	inline void flipCell(unsigned int, unsigned int);
-	inline void resize(sf::Vector2u size);
+	void resize(sf::Vector2u size);
 	inline void pause();
 	inline bool is_paused();
+	void fillRandomly(unsigned int chance = 2);
+	void run();
+	void clear();
 
 	enum Neighborhood {
 		Undefined = 0,
@@ -34,6 +37,8 @@ public:
 private:
 	void resetTexture();
 	inline void visualize(bool reset = true);
+	unsigned int checkNeighbours(unsigned int, unsigned int);
+	void updateCell(unsigned int, unsigned int);
 
 	Neighborhood neighborhood;
 	unsigned int lifeRule;
@@ -41,6 +46,7 @@ private:
 	sf::Texture texMap;
 	std::vector<std::vector<BooleanCell>> cellMap;
 	bool paused;
+	// border condition!
 };
 
 // INLINES
@@ -54,16 +60,6 @@ void GOL2D::flipCell(unsigned int pos_x, unsigned int pos_y)
 {
 	cellMap.at(pos_x).at(pos_y).flip();
 	texMap.update(cellMap.at(pos_x).at(pos_y).status ? SFGOL::live_cell : SFGOL::dead_cell, 1, 1, pos_x, pos_y);
-}
-
-void GOL2D::resize(sf::Vector2u size)
-{
-	texMap.create(size.x, size.y);
-	cellMap.clear();
-	cellMap.resize(size.x);
-	for (auto& a : cellMap)
-		a.resize(size.y);
-	resetTexture();
 }
 
 void GOL2D::pause()
