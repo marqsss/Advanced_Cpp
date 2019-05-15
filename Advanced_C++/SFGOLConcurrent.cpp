@@ -90,6 +90,27 @@ bool SFGOLConcurrent::run(unsigned int iterations, bool safetycheck)
 	return !constant.load();
 }
 
+double SFGOLConcurrent::getMaxHistories(uint64_t capacity, bool actual)
+{
+	if (actual && updates.size())
+	{
+		unsigned int updateSize = sizeof(sf::Vector2u);
+		unsigned int res = sizeof(updates);
+		for (auto v : updates)
+		{
+			res += sizeof(v);
+			if (v.size())
+				res += v.size()*updateSize;
+		}
+		return res;
+	}
+
+	unsigned int totalSize = sizeof(cellMap.at(0).at(0))*cellMap.size()*cellMap.at(0).size() +
+		sizeof(cellMap) + sizeof(cellMap.at(0))*cellMap.size();
+	printf("Expected (kB): %f\n", totalSize / 1024.);
+	return 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 ///////////////////////////////////////////////////////////////////////////////
@@ -123,7 +144,7 @@ void SFGOLConcurrent::taskC(unsigned int k)
 	auto size = cellMap.size() / threadNo;
 	for (int i = size * k + k % 1; i < size*(k + 1); ++i)
 		for (unsigned int j = 0; j < cellMap.at(i).size(); j++)
-				cellMap.at(i).at(j).neighbours = checkNeighbours(i, j);
+			cellMap.at(i).at(j).neighbours = checkNeighbours(i, j);
 }
 
 /*void SFGOLConcurrent::runPart(unsigned int lower, unsigned int upper, bool safetycheck)

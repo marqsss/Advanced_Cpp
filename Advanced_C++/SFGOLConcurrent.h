@@ -9,6 +9,7 @@ class SFGOLConcurrent : public SFGOL
 public:
 	SFGOLConcurrent();
 	bool run(unsigned int iterations = 1, bool safetycheck = true);
+	double getMaxHistories(uint64_t, bool actual = false);
 
 private:
 	void taskA(unsigned int);

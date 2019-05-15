@@ -36,6 +36,9 @@
     <ClCompile Include="GOL2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RAMTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameOfLife.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BooleanCell.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RAMTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
