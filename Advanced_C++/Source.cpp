@@ -13,6 +13,7 @@
 #include "QuickButtons.h"
 #include "GOL2D.h"
 #include "RAMTest.h"
+#include "CellularAutomaton.h"
 
 int main()
 {
@@ -24,6 +25,9 @@ int main()
 	GOL1D oneD;
 	GOL2D twoD;
 	unsigned int twoDScale;
+	RAMTest::initialize();
+	CellularAutomaton ca;
+
 	while (!valid)
 		switch (choice)
 		{
@@ -58,12 +62,17 @@ int main()
 			else
 				choice = 0;
 			break;
+		case 5:
+			ca.resize(sf::Vector2u(20,20));
+			valid = true;
+			break;
 		default:
 			printf("Choose input file:\n\
 			1. Gosper Glider Gun\n\
 			2. Queen Bee Shuttle\n\
 			3. One-dimensional GOL\n\
-			4. Two-dimensional GOL\n");
+			4. Two-dimensional GOL\n\
+			5. Zarodkowanie 1\n");
 			std::cin >> choice;
 			break;
 		}
@@ -76,15 +85,6 @@ int main()
 		GOL.describe();
 		//GOL.print();
 
-		// buttons setup: playback, back, pause, forward, play
-		QuickButtons butSpr;
-		for (auto i = 0; i < 5; ++i)
-		{
-			butSpr.newButton("../Advanced_C++/resources/graphics/buttons.bmp",
-				sf::IntRect(100 * i, 0, 100, 100), sf::Vector2f(540 + 50 * i, 10));
-			butSpr.getButton(i).setScale(.5, .5);
-		}
-
 
 		if (choice)
 		{
@@ -95,6 +95,15 @@ int main()
 			sf::Vector2f viewScale = sf::Vector2f(window.getView().getSize().x / window.getSize().x, window.getView().getSize().y / window.getSize().y);
 			sf::Vector2f mousePos;
 			sf::Event event;
+
+			// buttons setup: playback, back, pause, forward, play
+			QuickButtons butSpr;
+			for (auto i = 0; i < 5; ++i)
+			{
+				butSpr.newButton("../Advanced_C++/resources/graphics/buttons.bmp",
+					sf::IntRect(100 * i, 0, 100, 100), sf::Vector2f(540 + 50 * i, 10));
+				butSpr.getButton(i).setScale(.5, .5);
+			}
 
 			while (window.isOpen())
 			{
@@ -143,6 +152,14 @@ int main()
 								GOL.run();
 								GOL.describe();
 								//GOL.print();
+							}
+							break;
+						case sf::Keyboard::N: // histories
+							if (GOL.paused())
+							{
+								printf("Max safe RAM: %u\n", RAMTest::getSafeRAM());
+								printf("Histories: %f\n", GOL.getMaxHistories(RAMTest::getSafeRAM(), true));
+								printf("Max histories: %f\n", static_cast<long double>(RAMTest::getSafeRAM()) / GOL.getMaxHistories(RAMTest::getSafeRAM(), true));
 							}
 							break;
 						}
@@ -224,6 +241,7 @@ int main()
 				window.draw(GOL);
 				for (auto i = 0; i < 5; ++i)
 					window.draw(butSpr.getButton(i));
+				//window.draw(butSpr);
 				window.display();
 
 				//printf("FPS: %f\n", fps(60));
@@ -387,6 +405,127 @@ int main()
 
 			window.clear(sf::Color(0, 0, 128, 255));
 			window.draw(twoD);
+			window.display();
+			//printf("FPS: %f\n", fps(60));
+
+		} // window closes
+	} // two-dimensional GOL
+	else if (choice == 5)
+	{
+		// window setup
+		sf::ContextSettings settings;
+		settings.antialiasingLevel = 0;
+		sf::RenderWindow window(sf::VideoMode(800, 600), "Zarodkowanie", sf::Style::Default, settings);
+		sf::Vector2f viewScale = sf::Vector2f(window.getView().getSize().x / window.getSize().x, window.getView().getSize().y / window.getSize().y);
+		sf::Vector2f mousePos;
+		sf::Event event;
+		ca.setPosition(50, 50);
+		ca.setScale(5, 5);
+
+		// button setup
+		std::vector<sf::Texture> buttonTex(5);
+		std::vector<sf::Sprite> buttonSpr(5);
+		for (auto i = 0; i < 5; ++i)
+		{
+			sf::IntRect area(100 * i, 0, 100, 100);
+			buttonTex.at(i).loadFromFile("..\\Advanced_C++\\resources\\graphics\\buttons.bmp", area);
+			buttonSpr.at(i).setTexture(buttonTex.at(i), true);
+			buttonSpr.at(i).setPosition(sf::Vector2f(540 + 50 * i, 10));
+			buttonSpr.at(i).setScale(.5, .5);
+		}
+
+
+		// window launch
+		while (window.isOpen())
+		{
+			while (window.pollEvent(event))
+			{
+				switch (event.type)
+				{
+				case sf::Event::KeyPressed:
+					switch (event.key.code)
+					{
+					case sf::Keyboard::Z:
+						printf("clear\n");
+						ca.clear();
+						break;
+					case sf::Keyboard::X:
+						printf("size down\n");
+						ca.resize(sf::Vector2u(ca.getSize().x - 1, ca.getSize().y - 1));
+						break;			
+					case sf::Keyboard::Space: // pause/resume
+						// fall-through
+					case sf::Keyboard::C:
+						ca.pause();
+						printf(ca.is_paused() ? "paused\n" : "unpaused\n");
+						break;
+					case sf::Keyboard::V:
+						printf("size up\n");
+						ca.resize(sf::Vector2u(ca.getSize().x + 1, ca.getSize().y + 1));
+						break;
+					case sf::Keyboard::B:
+						printf("seed\n");
+						ca.seed();
+						break;
+					case sf::Keyboard::R:
+						printf("seed\n");
+						ca.seed();
+						break;
+					}
+					break;
+				case sf::Event::MouseButtonPressed:
+					if (event.mouseButton.button == sf::Mouse::Left) // sprite-buttons
+					{
+						mousePos = sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
+						//Seed
+						if (buttonSpr.at(4).getGlobalBounds().contains(mousePos))
+						{
+							printf("seed\n");
+							ca.seed();
+						}
+						//Change Size Up
+						if (buttonSpr.at(3).getGlobalBounds().contains(mousePos))
+						{
+							printf("size up\n");
+							ca.resize(sf::Vector2u(ca.getSize().x + 1, ca.getSize().y + 1));
+						}
+						//Change Size Down
+						if (buttonSpr.at(1).getGlobalBounds().contains(mousePos))
+						{
+							printf("size down\n");
+							ca.resize(sf::Vector2u(ca.getSize().x - 1, ca.getSize().y - 1));
+						}
+						//Reset
+						if (buttonSpr.at(0).getGlobalBounds().contains(mousePos))
+						{
+							printf("clear\n");
+							ca.clear();
+						}
+						//Pause/Unpause
+						if (buttonSpr.at(2).getGlobalBounds().contains(mousePos))
+						{
+							ca.pause();
+							printf(ca.is_paused() ? "paused\n" : "unpaused\n");
+						}
+					}
+					break;
+				case sf::Event::Closed:
+					window.close();
+					break;
+				} // end event switch
+			} // end event handling
+
+			if (!ca.is_paused())
+			{
+				ca.run();
+			}
+
+			window.clear(sf::Color(0, 0, 128, 255));
+			auto tex = ca.getTexture();
+			//ca.update(tex);
+			window.draw(ca);
+			for (auto a : buttonSpr)
+				window.draw(a);
 			window.display();
 			//printf("FPS: %f\n", fps(60));
 

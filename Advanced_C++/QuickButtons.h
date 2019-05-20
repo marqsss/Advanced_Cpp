@@ -6,7 +6,7 @@
 #include <vector>
 #include <filesystem>
 
-class QuickButtons
+class QuickButtons: public sf::Drawable
 {
 public:
 	bool newButton(std::filesystem::path, sf::IntRect, sf::Vector2f);
