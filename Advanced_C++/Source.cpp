@@ -3,8 +3,11 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <string>
+
 #include <sfml/window.hpp>
 #include <SFML/Graphics.hpp>
+
 #include "GameOfLife.h"
 #include "SFGOL.h"
 #include "GOL1D.h"
@@ -63,7 +66,7 @@ int main()
 				choice = 0;
 			break;
 		case 5:
-			ca.resize(sf::Vector2u(20,20));
+			ca.resize(sf::Vector2u(20, 20));
 			valid = true;
 			break;
 		default:
@@ -423,8 +426,9 @@ int main()
 		ca.setScale(5, 5);
 
 		// button setup
-		std::vector<sf::Texture> buttonTex(5);
-		std::vector<sf::Sprite> buttonSpr(5);
+
+		std::vector<sf::Texture> buttonTex(7);
+		std::vector<sf::Sprite> buttonSpr(7);
 		for (auto i = 0; i < 5; ++i)
 		{
 			sf::IntRect area(100 * i, 0, 100, 100);
@@ -433,6 +437,38 @@ int main()
 			buttonSpr.at(i).setPosition(sf::Vector2f(540 + 50 * i, 10));
 			buttonSpr.at(i).setScale(.5, .5);
 		}
+		buttonTex.at(5).loadFromFile("..\\Advanced_C++\\resources\\graphics\\buttons.bmp", sf::IntRect(0, 150, 200, 50));
+		buttonSpr.at(5).setTexture(buttonTex.at(5), true);
+		buttonSpr.at(5).setPosition(sf::Vector2f(560, 110));
+		buttonSpr.at(5).setScale(.5, .5);
+		buttonSpr.at(6).setTexture(buttonTex.at(5), true);
+		buttonSpr.at(6).setPosition(sf::Vector2f(680, 110));
+		buttonSpr.at(6).setScale(.5, .5);
+
+		// text field setup
+		sf::Font arial;
+		arial.loadFromFile("../Advanced_C++/resources/fonts/arial.ttf");
+		bool text_active_1 = false;
+		bool text_active_2 = false;
+		sf::String text_1;
+		sf::String text_2;
+		sf::Text text_field_1(text_1, arial, 14);
+		sf::Text text_field_2(text_2, arial, 14);
+		text_field_1.setFillColor(sf::Color::Black);
+		text_field_2.setFillColor(sf::Color::Black);
+		text_field_1.setPosition(565, 115);
+		text_field_2.setPosition(685, 115);
+
+
+		/*
+		for (auto i = 5; i < 13; ++i)
+		{
+			sf::IntRect area(50 * i, 200, 50, 50);
+			buttonTex.at(i).loadFromFile("..\\Advanced_C++\\resources\\graphics\\buttons.bmp", area);
+			buttonSpr.at(i).setTexture(buttonTex.at(i), true);
+			buttonSpr.at(i).setPosition(sf::Vector2f(540 + 50 * i, 10));
+
+		}*/
 
 
 		// window launch
@@ -445,92 +481,113 @@ int main()
 				case sf::Event::KeyPressed:
 					switch (event.key.code)
 					{
-					case sf::Keyboard::Z:
-						printf("clear\n");
-						ca.clear();
+					case sf::Keyboard::Backspace:
+						if (text_active_1 && text_1.getSize())
+							text_1.erase(text_1.getSize() - 1, 1);
+						else if (text_active_2 && text_2.getSize())
+							text_2.erase(text_2.getSize() - 1, 1);
 						break;
-					case sf::Keyboard::X:
-						printf("size down\n");
-						ca.resize(sf::Vector2u(ca.getSize().x - 1, ca.getSize().y - 1));
-						break;			
-					case sf::Keyboard::Space: // pause/resume
-						// fall-through
-					case sf::Keyboard::C:
-						ca.pause();
-						printf(ca.is_paused() ? "paused\n" : "unpaused\n");
-						break;
-					case sf::Keyboard::V:
-						printf("size up\n");
-						ca.resize(sf::Vector2u(ca.getSize().x + 1, ca.getSize().y + 1));
-						break;
-					case sf::Keyboard::B:
-						printf("seed\n");
-						ca.seed();
-						break;
-					case sf::Keyboard::R:
-						printf("seed\n");
-						ca.seed();
+					case sf::Keyboard::Enter:
+						text_active_1 = false;
+						text_active_2 = false;
+						ca.resize(sf::Vector2u(std::stoul(text_1.toAnsiString()), std::stoul(text_2.toAnsiString())));
 						break;
 					}
-					break;
-				case sf::Event::MouseButtonPressed:
-					if (event.mouseButton.button == sf::Mouse::Left) // sprite-buttons
-					{
-						mousePos = sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
-						//Seed
-						if (buttonSpr.at(4).getGlobalBounds().contains(mousePos))
+					case sf::Event::MouseButtonPressed:
+						if (event.mouseButton.button == sf::Mouse::Left) // sprite-buttons
 						{
-							printf("seed\n");
-							ca.seed();
+							mousePos = sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
+							//Seed
+							if (buttonSpr.at(4).getGlobalBounds().contains(mousePos))
+							{
+								printf("seed\n");
+								ca.seed();
+							}
+							//Change Size Up
+							else if (buttonSpr.at(3).getGlobalBounds().contains(mousePos))
+							{
+								printf("size up\n");
+								ca.resize(sf::Vector2u(ca.getSize().x + 1, ca.getSize().y + 1));
+							}
+							//Change Size Down
+							else if (buttonSpr.at(1).getGlobalBounds().contains(mousePos))
+							{
+								printf("size down\n");
+								ca.resize(sf::Vector2u(ca.getSize().x - 1, ca.getSize().y - 1));
+							}
+							//Reset
+							else if (buttonSpr.at(0).getGlobalBounds().contains(mousePos))
+							{
+								printf("clear\n");
+								ca.clear();
+							}
+							//Pause/Unpause
+							else if (buttonSpr.at(2).getGlobalBounds().contains(mousePos))
+							{
+								ca.pause();
+								printf(ca.is_paused() ? "paused\n" : "unpaused\n");
+							}
+							//Text field 1
+							else if (buttonSpr.at(5).getGlobalBounds().contains(mousePos))
+							{
+								text_active_2 = false;
+								text_active_1 = true;
+								printf("text field 1 active\n");
+							}
+							//Text field 2
+							else if (buttonSpr.at(6).getGlobalBounds().contains(mousePos))
+							{
+								text_active_1 = false;
+								text_active_2 = true;
+								printf("text field 2 active\n");
+							}
+							else
+							{
+								text_active_1 = false;
+								text_active_2 = false;
+								ca.resize(sf::Vector2u(std::stoul(text_1.toAnsiString()), std::stoul(text_2.toAnsiString())));
+							}
 						}
-						//Change Size Up
-						if (buttonSpr.at(3).getGlobalBounds().contains(mousePos))
+						break;
+					case sf::Event::TextEntered:
+						if (event.text.unicode > 0x1f && event.text.unicode < 0x3a)
 						{
-							printf("size up\n");
-							ca.resize(sf::Vector2u(ca.getSize().x + 1, ca.getSize().y + 1));
+							if (text_active_1)
+							{
+								text_1 += event.text.unicode;
+								text_field_1.setString(text_1);
+							}
+							else if (text_active_2)
+							{
+								text_2 += event.text.unicode;
+								text_field_2.setString(text_2);
+							}
 						}
-						//Change Size Down
-						if (buttonSpr.at(1).getGlobalBounds().contains(mousePos))
-						{
-							printf("size down\n");
-							ca.resize(sf::Vector2u(ca.getSize().x - 1, ca.getSize().y - 1));
-						}
-						//Reset
-						if (buttonSpr.at(0).getGlobalBounds().contains(mousePos))
-						{
-							printf("clear\n");
-							ca.clear();
-						}
-						//Pause/Unpause
-						if (buttonSpr.at(2).getGlobalBounds().contains(mousePos))
-						{
-							ca.pause();
-							printf(ca.is_paused() ? "paused\n" : "unpaused\n");
-						}
-					}
-					break;
-				case sf::Event::Closed:
-					window.close();
-					break;
-				} // end event switch
-			} // end event handling
 
-			if (!ca.is_paused())
-			{
-				ca.run();
-			}
+						break;
+					case sf::Event::Closed:
+						window.close();
+						break;
+					} // end event switch
+				} // end event handling
 
-			window.clear(sf::Color(0, 0, 128, 255));
-			auto tex = ca.getTexture();
-			//ca.update(tex);
-			window.draw(ca);
-			for (auto a : buttonSpr)
-				window.draw(a);
-			window.display();
-			//printf("FPS: %f\n", fps(60));
+				if (!ca.is_paused())
+				{
+					ca.run();
+				}
 
-		} // window closes
-	} // two-dimensional GOL
+				window.clear(sf::Color(0, 0, 128, 255));
+				auto tex = ca.getTexture();
+				window.draw(ca);
+				for (auto a : buttonSpr)
+					window.draw(a);
+				window.draw(text_field_1);
+				window.draw(text_field_2);
+				window.display();
+				//printf("FPS: %f\n", fps(60));
 
-	return 0;
-}
+			} // window closes
+		} // two-dimensional GOL
+
+		return 0;
+	}

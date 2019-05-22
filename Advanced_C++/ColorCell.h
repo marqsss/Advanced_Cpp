@@ -8,7 +8,7 @@ class ColorCell
 public:
 
 	ColorCell(sf::Color c = sf::Color::White) :color(c), future(sf::Color::White) {}
-	bool empty() { return color == sf::Color::White ? true : false; }
+	bool is_empty() { return color == sf::Color::White ? true : false; }
 
 	sf::Color color;
 	sf::Color future;
