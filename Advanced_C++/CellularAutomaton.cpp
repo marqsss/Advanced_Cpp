@@ -114,24 +114,70 @@ void CellularAutomaton::checkNeighbours(unsigned int i, unsigned int j)
 				}
 			}
 		};
+		// determine exact neighbourhood type n
+		unsigned int n = neighbourhood;
+		if (n == Random)
+			n = dice() % 8;
+		else if (n == Hexagonal_Random)
+			n = dice() % 2 + Hexagonal_Left;
+		else if (n == Pentagonal_Random)
+			n = dice() % 4 + Pentagonal_Left;
+		// get all neighbours in relation to n
 		if (borderCondition)
 		{
-			check((i +cellMap.size()-1) % cellMap.size(), j);
-			check(i, (j +cellMap.at(i).size()-1) % cellMap.at(i).size());
-			check((i + 1) % cellMap.size(), j);
-			check(i, (j + 1) % cellMap.at(i).size());
+			// left
+			if (n != Pentagonal_Right)
+				check((i + cellMap.size() - 1) % cellMap.size(), j);
+			// top
+			if (n != Pentagonal_Bottom)
+				check(i, (j + cellMap.at(i).size() - 1) % cellMap.at(i).size());
+			// right
+			if (n != Pentagonal_Left)
+				check((i + 1) % cellMap.size(), j);
+			// bottom
+			if (n != Pentagonal_Top)
+				check(i, (j + 1) % cellMap.at(i).size());
+			// top-right
+			if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Top || n == Pentagonal_Right)
+				check((i + 1) % cellMap.size(), (j + cellMap.at(i).size() - 1) % cellMap.at(i).size());
+			// bottom-right
+			if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom)
+				check((i + 1) % cellMap.size(), (j + 1) % cellMap.at(i).size());
+			// bottom-left
+			if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left)
+				check((i + cellMap.size() - 1) % cellMap.size(), (j + 1) % cellMap.at(i).size());
+			// top-left
+			if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left)
+				check((i + cellMap.size() - 1) % cellMap.size(), (j + cellMap.at(i).size() - 1) % cellMap.at(i).size());
 		}
 		else
 		{
-			if (i > 0)
+			// left
+			if (i > 0 && n != Pentagonal_Right)
 				check(i - 1, j);
-			if (j > 0)
+			// top
+			if (j > 0 && n != Pentagonal_Bottom)
 				check(i, j - 1);
-			if (i < cellMap.size() - 1)
+			// right
+			if (i < cellMap.size() - 1 && n != Pentagonal_Left)
 				check(i + 1, j);
-			if (j < cellMap.at(i).size() - 1)
+			// bottom
+			if (j < cellMap.at(i).size() - 1 && n != Pentagonal_Top)
 				check(i, j + 1);
+			// top-right
+			if (j > 0 && i < cellMap.size() - 1 && (n == Moore || n == Hexagonal_Right || n == Pentagonal_Top || n == Pentagonal_Right))
+				check(i + 1, j - 1);
+			// bottom-right
+			if (i < cellMap.size() - 1 && j < cellMap.at(i).size() - 1 && n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom)
+				check(i + 1, j + 1);
+			// bottom-left
+			if (i > 0 && j < cellMap.at(i).size() - 1 && n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left)
+				check(i - 1, j + 1);
+			// top-left
+			if (i > 0 && j > 0 && n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left)
+				check(i - 1, j - 1);
 		}
+
 		unsigned int index = 0;
 		for (auto k = 1; k < nr.size(); k++)
 		{

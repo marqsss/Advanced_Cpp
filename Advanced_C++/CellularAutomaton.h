@@ -14,8 +14,14 @@ public:
 		Moore = 1,
 		Hexagonal_Left,
 		Hexagonal_Right,
-		Hexagonal_Random,
-		Pentagonal_Random
+		Pentagonal_Left,
+		Pentagonal_Top,
+		Pentagonal_Right,
+		Pentagonal_Bottom,
+		Hexagonal_Random = 8,
+		Pentagonal_Random,
+		Random,
+		Monte_Carlo
 	};
 	enum Palette {
 		Green_Blue = 0,
@@ -37,8 +43,10 @@ public:
 	//void seedByHand(unsigned int seeds = 10);
 	sf::Vector2u getSize() { return texMap.getSize(); }
 	void setNeighbourhood(Neighbourhood n = VonNeumann) { neighbourhood = n; }
+	Neighbourhood getNeighbourhood() { return neighbourhood; }
 	void setBC(bool bc) { borderCondition = bc; }
 	void setPalette(Palette p) { palette = p; }
+	// void swapVisualization(); // ziarna <-> energia
 	
 private:
 	//void display();
