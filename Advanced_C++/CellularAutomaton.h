@@ -29,30 +29,33 @@ public:
 		Red_Green
 	};
 
-	CellularAutomaton() :paused(true) {}
+	CellularAutomaton() :paused(true), colorThreshold(50) {}
 	void resize(sf::Vector2u size);
 	inline void pause() { paused = !paused; }
 	inline bool is_paused() { return paused; }
 	void clear();
 	void run();
 	//void runMC();
-	void seedRandom(unsigned int seeds = 10);
-	void seedUniform(unsigned int seeds = 10);
+	void seedRandom(unsigned int n_seeds = 10);
+	void seedUniform(unsigned int n_seeds = 10);
 	// radius: in cell-units (pixel). Default 0 means 10% of the average field dimension
-	void seedWithRadius(unsigned int seeds = 10, unsigned int radius = 0);
+	void seedWithRadius(unsigned int n_seeds = 10, unsigned int radius = 0);
 	//void seedByHand(unsigned int seeds = 10);
 	sf::Vector2u getSize() { return texMap.getSize(); }
 	void setNeighbourhood(Neighbourhood n = VonNeumann) { neighbourhood = n; }
 	Neighbourhood getNeighbourhood() { return neighbourhood; }
 	void setBC(bool bc) { borderCondition = bc; }
 	void setPalette(Palette p) { palette = p; }
+	void setColorThreshold(unsigned int ct = 50) { colorThreshold = ct; }
 	// void swapVisualization(); // ziarna <-> energia
-	
+
 private:
 	//void display();
 	void visualize();
 	void checkNeighbours(unsigned int, unsigned int);
 	void updateCell(unsigned int, unsigned int, sf::Color = sf::Color::White);
+	inline unsigned int colorCompare(const sf::Color& c1, const sf::Color& c2);
+	void check_radius(std::vector<sf::Vector2u>& positions, unsigned int& radius, unsigned int& boredom);
 
 	std::vector<std::vector<ColorCell>> cellMap;
 	std::vector<sf::Color> seeds;
@@ -63,6 +66,7 @@ private:
 	Palette palette;
 	bool paused;
 	std::random_device dice;
+	unsigned int colorThreshold;
 };
 
 #endif

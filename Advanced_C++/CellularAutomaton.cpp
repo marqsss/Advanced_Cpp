@@ -1,3 +1,4 @@
+#include <cmath>
 #include "CellularAutomaton.h"
 
 
@@ -14,6 +15,7 @@ void CellularAutomaton::resize(sf::Vector2u size)
 
 void CellularAutomaton::clear()
 {
+	seeds.clear();
 	cellMap.clear();
 	cellMap.resize(texMap.getSize().x);
 	for (auto& a : cellMap)
@@ -40,11 +42,7 @@ void CellularAutomaton::run()
 
 void CellularAutomaton::seedRandom(unsigned int n_seeds)
 {
-	unsigned int colorThreshold = 50;
-	seeds.clear();
-	auto colorCompare = [](const sf::Color& c1, const sf::Color& c2) ->unsigned int {
-		return abs(c1.r - c2.r) + abs(c1.g - c2.g) + abs(c1.b - c2.b);
-	}; // for not only same, but too-similar colors
+	clear();
 
 	std::vector<sf::Vector2u> positions;
 	//first seed
@@ -71,6 +69,128 @@ void CellularAutomaton::seedRandom(unsigned int n_seeds)
 						fresh = false;
 			}
 			while (!fresh && boredom < 10000);
+			bool repeat = false;
+			sf::Color newseed;
+			do // do not repeat colors
+			{
+				repeat = false;
+				newseed = sf::Color(palette == 0 ? 0 : dice() % 255, palette == 1 ? 0 : dice() % 255, palette == 2 ? 0 : dice() % 255, 255);
+				for (auto c : seeds)
+					if (colorCompare(c, newseed) < colorThreshold || newseed == sf::Color::White)
+						repeat = true;
+			}
+			while (repeat);
+			seeds.emplace_back(newseed);
+			updateCell(positions.at(s).x, positions.at(s).y, seeds.at(s));
+		}
+	visualize();
+}
+
+void CellularAutomaton::seedUniform(unsigned int n_seeds)
+{
+	clear();
+	// determine rows (h) x cols (w) dimensions of the "grid"
+	auto sqrt = std::sqrt(n_seeds);
+	unsigned int w = 0, h = 0;
+	if (floor(sqrt)*floor(sqrt) == n_seeds)
+		w = h = sqrt;
+	else if (floor(sqrt)*ceil(sqrt) >= n_seeds)
+	{
+		w = ceil(sqrt);
+		h = floor(sqrt);
+	}
+	else
+		w = h = ceil(sqrt);
+	double pos_h = cellMap.at(0).size() / 2. / h;
+	double pos_w = cellMap.size() / 2. / w;
+	// determine no. of "short" vs "long" rows
+	unsigned int s_r = 0;
+	s_r = h * w - n_seeds;
+	// fill
+	auto row_fill = s_r * 1. / h + .5;
+	for (auto j = 0; j < h; ++j)
+	{
+		if (row_fill >= 1.)
+		{ // long row
+			--row_fill;
+			for (auto i = 0; i < w; ++i)
+			{
+				bool repeat = false;
+				sf::Color newseed;
+				do // do not repeat colors
+				{
+					repeat = false;
+					newseed = sf::Color(palette == 0 ? 0 : dice() % 255, palette == 1 ? 0 : dice() % 255, palette == 2 ? 0 : dice() % 255, 255);
+					for (auto c : seeds)
+						if (colorCompare(c, newseed) < colorThreshold || newseed == sf::Color::White)
+							repeat = true;
+				}
+				while (repeat);
+				seeds.emplace_back(newseed);
+				updateCell(pos_w * 2 * i + pos_w, pos_h * 2 * j + pos_h, seeds.back());
+			}
+		}
+		else
+		{ // short row
+			for (auto i = 0; i < w - 1; ++i)
+			{
+				bool repeat = false;
+				sf::Color newseed;
+				do // do not repeat colors
+				{
+					repeat = false;
+					newseed = sf::Color(palette == 0 ? 0 : dice() % 255, palette == 1 ? 0 : dice() % 255, palette == 2 ? 0 : dice() % 255, 255);
+					for (auto c : seeds)
+						if (colorCompare(c, newseed) < colorThreshold || newseed == sf::Color::White)
+							repeat = true;
+				}
+				while (repeat);
+				seeds.emplace_back(newseed);
+				updateCell(pos_w * 2 * (i + 1), pos_h * 2 * j + pos_h, seeds.back());
+			}
+		}
+		row_fill += s_r * 1. / h;
+	}
+	printf("Seeded %u seeds.\n", seeds.size());
+	visualize();
+}
+
+void CellularAutomaton::seedWithRadius(unsigned int n_seeds, unsigned int radius)
+{
+	clear();
+	if (!radius)
+		radius = std::sqrt(cellMap.size()*cellMap.size() + cellMap.at(0).size()*cellMap.at(0).size()) / 5;
+	printf("Radius = %u\n", radius);
+
+	std::vector<sf::Vector2u> positions;
+	/*std::is_function<bool()> check_radius = [&]() -> bool {
+	};*/
+
+	//first seed
+	if (n_seeds)
+	{
+		positions.emplace_back(dice() % cellMap.size(), dice() % cellMap.at(0).size());
+		seeds.emplace_back(sf::Color(palette == 0 ? 0 : dice() % 255, palette == 1 ? 0 : dice() % 255, palette == 2 ? 0 : dice() % 255, 255));
+		while (colorCompare(seeds.back(), sf::Color::White) < colorThreshold)
+			seeds.back() = sf::Color(palette == 0 ? 0 : dice() % 255, palette == 1 ? 0 : dice() % 255, palette == 2 ? 0 : dice() % 255, 255);
+		updateCell(positions.at(0).x, positions.at(0).y, seeds.at(0));
+	}
+	// other seeds
+	if (n_seeds > 1)
+		for (auto s = 1; s < n_seeds; ++s)
+		{
+			positions.emplace_back(dice() % cellMap.size(), dice() % cellMap.at(0).size());
+
+			unsigned int boredom = 0;
+			check_radius(positions, radius, boredom);
+			if (boredom >= 100000)
+			{
+				printf("The program failed to find a suitable place for a new seed. %u seeds were placed so far.\n", seeds.size());
+				break;
+			}
+			else
+				printf("Boredom: %u\n", boredom);
+
 			bool repeat = false;
 			sf::Color newseed;
 			do // do not repeat colors
@@ -195,10 +315,25 @@ void CellularAutomaton::updateCell(unsigned int i, unsigned int j, sf::Color col
 	cell.color = cell.future = (color == sf::Color::White ? cell.future : color);
 	if (cell.future != sf::Color::White)
 		imgMap.setPixel(i, j, cell.color);
-	/*sf::Uint8 temp[4];
-	temp[3] = 255;
-	temp[0] = cell.color.r;
-	temp[1] = cell.color.g;
-	temp[2] = cell.color.b;
-	texMap.update(temp, 1, 1, i, j);*/
+}
+
+unsigned int CellularAutomaton::colorCompare(const sf::Color& c1, const sf::Color& c2)
+{
+	return abs(c1.r - c2.r) + abs(c1.g - c2.g) + abs(c1.b - c2.b);
+}
+
+void CellularAutomaton::check_radius(std::vector<sf::Vector2u>& positions, unsigned int& radius, unsigned int& boredom)
+{
+	++boredom;
+	double min = 999;
+	for (auto i = 0; i < positions.size() - 1; ++i)
+	{
+		auto sqrt = std::sqrt(pow(positions.at(i).x > positions.back().x ? positions.at(i).x - positions.back().x : positions.back().x - positions.at(i).x, 2) +
+			pow(positions.at(i).y > positions.back().y ? positions.at(i).y - positions.back().y : positions.back().y - positions.at(i).y, 2));
+		if (sqrt < radius)
+		{
+			positions.back() = sf::Vector2u(dice() % cellMap.size(), dice() % cellMap.at(0).size());
+			check_radius(positions, radius, boredom);
+		}
+	}
 }

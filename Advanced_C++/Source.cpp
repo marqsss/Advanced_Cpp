@@ -438,7 +438,7 @@ int main()
 		menuBackground.setOutlineColor(sf::Color::Black);
 
 		// button setup
-		unsigned int n_button = 12;
+		unsigned int n_button = 14;
 		sf::Texture buttonTex;
 		buttonTex.loadFromFile("..\\Advanced_C++\\resources\\graphics\\buttons.bmp");
 		std::vector<sf::Sprite> buttonSpr(n_button);
@@ -467,7 +467,14 @@ int main()
 			buttonSpr.at(i).setTexture(buttonTex);
 			buttonSpr.at(i).setTextureRect(sf::IntRect(400 + 50 * (i % 2), 100 + 50 * ((i - 8) / 2), 50, 50));
 			buttonSpr.at(i).setPosition(685 + 50 * (i - 8), 225);
-		}
+		}buttonSpr.at(12).setTexture(buttonTex, true);
+		buttonSpr.at(12).setTextureRect(sf::IntRect(0, 150, 200, 50));
+		buttonSpr.at(12).setPosition(sf::Vector2f(660, 510));
+		buttonSpr.at(12).setScale(.5, .5);
+		buttonSpr.at(13).setTexture(buttonTex, true);
+		buttonSpr.at(13).setTextureRect(sf::IntRect(0, 150, 200, 50));
+		buttonSpr.at(13).setPosition(sf::Vector2f(780, 510));
+		buttonSpr.at(13).setScale(.5, .5);
 		for (auto& b : buttonSpr)
 			b.setColor(sf::Color(195, 195, 195, 255));
 		for (auto i = 0; i < 12; ++i)
@@ -492,14 +499,21 @@ int main()
 			text_field.at(i).setString(text.at(i));
 			text_field.at(i).setFont(arial);
 			text_field.at(i).setCharacterSize(14);
+			text_field.at(i).setFillColor(sf::Color::Black);
 		}
 		text_field.at(0).setPosition(665, 115);
 		text_field.at(1).setPosition(785, 115);
-		//text_field.at(2).setPosition(785, 115);
-		//text_field.at(3).setPosition(785, 115);
+		text_field.at(2).setPosition(665, 515);
+		text_field.at(3).setPosition(785, 515);
 		sf::Text size_tooltip("W:                           H:", arial, 14);
 		size_tooltip.setFillColor(sf::Color::Black);
 		size_tooltip.setPosition(640, 115);
+		text.at(0) = std::to_string(ca.getSize().x);
+		text.at(1) = std::to_string(ca.getSize().y);
+		text.at(2) = "10";
+		text.at(3) = "0";
+		for (auto i = 0; i < text.size(); ++i)
+			text_field.at(i).setString(text.at(i));
 		// text field: sprite {texture, text; string; active; backspace; write; isempty; isactive; getstring; makeactive(v<>)}
 
 
@@ -574,6 +588,16 @@ int main()
 							text_active.at(1) = true;
 							printf("text field 2 active\n");
 						}
+						else if (buttonSpr.at(12).getGlobalBounds().contains(mousePos))
+						{//Text field 3
+							text_active.at(2) = true;
+							printf("text field 3 active\n");
+						}
+						else if (buttonSpr.at(13).getGlobalBounds().contains(mousePos))
+						{//Text field 4
+							text_active.at(3) = true;
+							printf("text field 4 active\n");
+						}
 						else if (buttonSpr.at(7).getGlobalBounds().contains(mousePos))
 						{// RESIZE button
 							ca.resize(sf::Vector2u(
@@ -583,17 +607,17 @@ int main()
 						else if (buttonSpr.at(8).getGlobalBounds().contains(mousePos))
 						{// Seed uniform
 							printf("Seeding uniform\n");
-							//ca.seedUniform(text.at(2).is_empty()?10:std::stoul(text.at(2).toAnsiString()));
+							ca.seedUniform(text.at(2).isEmpty() ? 10 : std::stoul(text.at(2).toAnsiString()));
 						}
 						else if (buttonSpr.at(9).getGlobalBounds().contains(mousePos))
 						{// Seed random
 							printf("Seeding random\n");
-							ca.seedRandom();
+							ca.seedRandom(text.at(2).isEmpty() ? 10 : std::stoul(text.at(2).toAnsiString()));
 						}
 						else if (buttonSpr.at(10).getGlobalBounds().contains(mousePos))
 						{// Seed radius
 							printf("Seeding with radius\n");
-							//ca.seedUniform(text.at(2).is_empty()?10:std::stoul(text.at(2).toAnsiString()), text.at(3).is_empty()?0,std::stoul(text.at(3).toAnsiString())/ca.getScale().x);
+							ca.seedWithRadius(text.at(2).isEmpty() ? 10 : std::stoul(text.at(2).toAnsiString()), text.at(3).isEmpty() ? 0 : std::stoul(text.at(3).toAnsiString()));
 						}
 						else if (buttonSpr.at(11).getGlobalBounds().contains(mousePos))
 						{// Seed by hand
@@ -629,11 +653,11 @@ int main()
 				case sf::Event::MouseButtonReleased:
 					// dimming buttons after click
 					for (auto i = 0; i < n_button; ++i)
-						if (i != 5 && i != 6)
+						if (i != 5 && i != 6 && i != 12 && i != 13) // exclude text_fields
 							buttonSpr.at(i).setColor(sf::Color(195, 195, 195, 255));
 					break;
 				case sf::Event::TextEntered:
-					if (event.text.unicode > 0x1f && event.text.unicode < 0x3a)
+					if (event.text.unicode > 0x1f && event.text.unicode < 0x3a) // numbers only
 					{
 						for (auto i = 0; i < text_field.size(); ++i)
 							if (text_active.at(i))
