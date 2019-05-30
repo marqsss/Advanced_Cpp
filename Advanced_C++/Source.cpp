@@ -564,9 +564,8 @@ int main()
 						}
 						else if (buttonSpr.at(1).getGlobalBounds().contains(mousePos))
 						{//Disabled
-							printf("reset\n");
-							ca.clear();
-							ca.seedRandom();
+							printf("swap visual\n");
+							ca.swapVisualization(true);
 						}
 						else if (buttonSpr.at(0).getGlobalBounds().contains(mousePos))
 						{//Reset

@@ -35,7 +35,6 @@ public:
 	inline bool is_paused() { return paused; }
 	void clear();
 	void run();
-	//void runMC();
 	void seedRandom(unsigned int n_seeds = 10);
 	void seedUniform(unsigned int n_seeds = 10);
 	// radius: in cell-units (pixel). Default 0 means 10% of the average field dimension
@@ -44,25 +43,29 @@ public:
 	sf::Vector2u getSize() { return texMap.getSize(); }
 	void setNeighbourhood(Neighbourhood n = VonNeumann) { neighbourhood = n; }
 	Neighbourhood getNeighbourhood() { return neighbourhood; }
-	void setBC(bool bc) { borderCondition = bc; }
+	void setBC(bool bc) { boundaryCondition = bc; }
 	void setPalette(Palette p) { palette = p; }
 	void setColorThreshold(unsigned int ct = 50) { colorThreshold = ct; }
-	// void swapVisualization(); // ziarna <-> energia
+	void runMC(double kt = 0);
+	void swapVisualization(bool mc); // ziarna <-> energia
 
 private:
 	//void display();
-	void visualize();
+	void visualize(bool MC = false);
 	void checkNeighbours(unsigned int, unsigned int);
 	void updateCell(unsigned int, unsigned int, sf::Color = sf::Color::White);
 	inline unsigned int colorCompare(const sf::Color& c1, const sf::Color& c2);
 	void check_radius(std::vector<sf::Vector2u>& positions, unsigned int& radius, unsigned int& boredom);
+	Neighbourhood gatherEdges();
 
 	std::vector<std::vector<ColorCell>> cellMap;
+	std::vector<std::tuple<unsigned int, unsigned int, bool>> edges;
 	std::vector<sf::Color> seeds;
 	sf::Texture texMap;
 	sf::Image imgMap;
+	sf::Image MCMap;
 	Neighbourhood neighbourhood;
-	bool borderCondition;
+	bool boundaryCondition;
 	Palette palette;
 	bool paused;
 	std::random_device dice;
