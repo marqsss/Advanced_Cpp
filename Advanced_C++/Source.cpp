@@ -565,7 +565,7 @@ int main()
 						else if (buttonSpr.at(1).getGlobalBounds().contains(mousePos))
 						{//Disabled
 							printf("swap visual\n");
-							ca.swapVisualization(true);
+							ca.swapVisualization();
 						}
 						else if (buttonSpr.at(0).getGlobalBounds().contains(mousePos))
 						{//Reset

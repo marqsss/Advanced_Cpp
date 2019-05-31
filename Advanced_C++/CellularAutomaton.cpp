@@ -10,7 +10,7 @@ void CellularAutomaton::resize(sf::Vector2u size)
 		a.resize(size.y);
 	texMap.create(size.x, size.y);
 	imgMap.create(size.x, size.y, sf::Color::White);
-	MCMap.create(size.x, size.y, sf::Color::White);
+	MCMap.create(size.x, size.y, sf::Color::Transparent);
 	visualize();
 }
 
@@ -23,19 +23,16 @@ void CellularAutomaton::clear()
 	for (auto& a : cellMap)
 		a.resize(texMap.getSize().y);
 	imgMap.create(texMap.getSize().x, texMap.getSize().y, sf::Color::White);
-	MCMap.create(texMap.getSize().x, texMap.getSize().y, sf::Color::White);
+	MCMap.create(texMap.getSize().x, texMap.getSize().y, sf::Color::Transparent);
 	visualize();
 }
 
 void CellularAutomaton::run()
 {
-	if (seeds.size())
+	if (seeds.size() && !paused)
 	{
 		if (neighbourhood == Monte_Carlo)
-		{
 			runMC();
-			visualize(true);
-		}
 		else
 		{
 			for (auto i = 0; i < cellMap.size(); ++i)
@@ -46,8 +43,8 @@ void CellularAutomaton::run()
 				for (auto j = 0; j < cellMap.at(i).size(); ++j)
 					if (cellMap.at(i).at(j).needsUpdate())
 						updateCell(i, j);
-			visualize();
 		}
+		visualize();
 	}
 }
 
@@ -78,8 +75,7 @@ void CellularAutomaton::seedRandom(unsigned int n_seeds)
 				for (auto i = 0; i < positions.size() - 1; ++i)
 					if (positions.at(i) == positions.back())
 						fresh = false;
-			}
-			while (!fresh && boredom < 10000);
+			} while (!fresh && boredom < 10000);
 			bool repeat = false;
 			sf::Color newseed;
 			do // do not repeat colors
@@ -89,8 +85,7 @@ void CellularAutomaton::seedRandom(unsigned int n_seeds)
 				for (auto c : seeds)
 					if (colorCompare(c, newseed) < colorThreshold || newseed == sf::Color::White)
 						repeat = true;
-			}
-			while (repeat);
+			} while (repeat);
 			seeds.emplace_back(newseed);
 			updateCell(positions.at(s).x, positions.at(s).y, seeds.at(s));
 		}
@@ -135,8 +130,7 @@ void CellularAutomaton::seedUniform(unsigned int n_seeds)
 					for (auto c : seeds)
 						if (colorCompare(c, newseed) < colorThreshold || newseed == sf::Color::White)
 							repeat = true;
-				}
-				while (repeat);
+				} while (repeat);
 				seeds.emplace_back(newseed);
 				updateCell(pos_w * 2 * i + pos_w, pos_h * 2 * j + pos_h, seeds.back());
 			}
@@ -154,8 +148,7 @@ void CellularAutomaton::seedUniform(unsigned int n_seeds)
 					for (auto c : seeds)
 						if (colorCompare(c, newseed) < colorThreshold || newseed == sf::Color::White)
 							repeat = true;
-				}
-				while (repeat);
+				} while (repeat);
 				seeds.emplace_back(newseed);
 				updateCell(pos_w * 2 * (i + 1), pos_h * 2 * j + pos_h, seeds.back());
 			}
@@ -211,8 +204,7 @@ void CellularAutomaton::seedWithRadius(unsigned int n_seeds, unsigned int radius
 				for (auto c : seeds)
 					if (colorCompare(c, newseed) < colorThreshold || newseed == sf::Color::White)
 						repeat = true;
-			}
-			while (repeat);
+			} while (repeat);
 			seeds.emplace_back(newseed);
 			updateCell(positions.at(s).x, positions.at(s).y, seeds.at(s));
 		}
@@ -224,6 +216,16 @@ void CellularAutomaton::runMC(double kt)
 	if (kt > .1 || kt < -6)
 		return;
 	auto n = gatherEdges();
+	/*gatherEdgesNaive();
+
+	unsigned int n = neighbourhood;
+	if (n == Random)
+		n = dice() % 8;
+	else if (n == Hexagonal_Random)
+		n = dice() % 2 + Hexagonal_Left;
+	else if (n == Pentagonal_Random)
+		n = dice() % 4 + Pentagonal_Left;*/
+
 	auto no_used = 0;
 	auto check = [&](unsigned int i, unsigned int j, unsigned int k, unsigned int l)->bool {
 		return cellMap.at(i).at(j).color != cellMap.at(k).at(l).color;
@@ -231,6 +233,7 @@ void CellularAutomaton::runMC(double kt)
 
 	while (no_used < edges.size())
 	{
+		printf("Progress: %f\%\n", 1.*no_used / edges.size());
 		std::vector<unsigned int> nr(seeds.size());
 		// retrieve random tuple and check if it's a first check on this MC-iteration
 		auto&[i, j, used] = edges.at(dice() % edges.size());
@@ -313,9 +316,12 @@ void CellularAutomaton::runMC(double kt)
 	} // end of MC-iteration
 }
 
-void CellularAutomaton::swapVisualization(bool mc)
+void CellularAutomaton::swapVisualization()
 {
-	visualize(mc);
+	if (!edges.size() && !visual_energy)
+		gatherEdges();
+	visual_energy = !visual_energy;
+	visualize(visual_energy);
 }
 
 
@@ -325,9 +331,18 @@ void CellularAutomaton::swapVisualization(bool mc)
 void CellularAutomaton::visualize(bool MC)
 {
 	if (!MC)
+	{
 		texMap.update(imgMap);
+		/*if (edges.size())
+			texMap.update(MCMap);*/
+	}
 	else if (edges.size())
+	{
+		sf::Image temp;
+		temp.create(texMap.getSize().x, texMap.getSize().y, sf::Color::White);
+		texMap.update(temp);
 		texMap.update(MCMap);
+	}
 	setTexture(texMap, true);
 }
 
@@ -453,20 +468,21 @@ void CellularAutomaton::check_radius(std::vector<sf::Vector2u>& positions, unsig
 
 CellularAutomaton::Neighbourhood CellularAutomaton::gatherEdges()
 {
-	if (!edges.size())	
+	if (edges.size())
 		edges.clear();
 
 	auto check = [&](unsigned int i, unsigned int j, unsigned int k, unsigned int l)->bool {
 		return cellMap.at(i).at(j).color != cellMap.at(k).at(l).color;
 	};
 
-	unsigned int n = neighbourhood;
+	/*unsigned int n = neighbourhood;
 	if (n == Random)
 		n = dice() % 8;
 	else if (n == Hexagonal_Random)
 		n = dice() % 2 + Hexagonal_Left;
 	else if (n == Pentagonal_Random)
-		n = dice() % 4 + Pentagonal_Left;
+		n = dice() % 4 + Pentagonal_Left;*/
+	auto n = Moore;
 
 	for (auto i = 0; i < cellMap.size(); ++i)
 		for (auto j = 0; j < cellMap.at(i).size(); ++j)
@@ -475,25 +491,25 @@ CellularAutomaton::Neighbourhood CellularAutomaton::gatherEdges()
 			if (boundaryCondition)
 			{
 				// left
-				if ((n != Pentagonal_Right) && check(i, j, (i + cellMap.size() - 1) % cellMap.size(), j));
+				if ((n != Pentagonal_Right) && check(i, j, (i + cellMap.size() - 1) % cellMap.size(), j))
 				{
 					edges.emplace_back(i, j, false);
 					continue;
 				}
 				// top
-				if ((n != Pentagonal_Bottom) && check(i, j, i, (j + cellMap.at(i).size() - 1) % cellMap.at(i).size()));
+				if ((n != Pentagonal_Bottom) && check(i, j, i, (j + cellMap.at(i).size() - 1) % cellMap.at(i).size()))
 				{
 					edges.emplace_back(i, j, false);
 					continue;
 				}
 				// right
-				if ((n != Pentagonal_Left) && check(i, j, (i + 1) % cellMap.size(), j));
+				if ((n != Pentagonal_Left) && check(i, j, (i + 1) % cellMap.size(), j))
 				{
 					edges.emplace_back(i, j, false);
 					continue;
 				}
 				// bottom
-				if ((n != Pentagonal_Top) && check(i, j, i, (j + 1) % cellMap.at(i).size()));
+				if ((n != Pentagonal_Top) && check(i, j, i, (j + 1) % cellMap.at(i).size()))
 				{
 					edges.emplace_back(i, j, false);
 					continue;
@@ -580,4 +596,118 @@ CellularAutomaton::Neighbourhood CellularAutomaton::gatherEdges()
 			}
 		}
 	return Neighbourhood(n);
+}
+
+void CellularAutomaton::gatherEdgesNaive()
+{
+	if (edges.size())
+		edges.clear();
+
+	for (auto i = 0; i < cellMap.size(); ++i)
+		for (auto j = 0; j < cellMap.at(i).size(); ++j)
+		{
+			// get all neighbours in Moore neighbourhood
+			if (boundaryCondition)
+			{
+				// left
+				if (colorCompare(cellMap.at(i).at(j).color, cellMap.at((i - 1) % cellMap.size()).at(j).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// top
+				if (colorCompare(cellMap.at(i).at(j).color, cellMap.at(i).at((j - 1) % cellMap.at(i).size()).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// right
+				if (colorCompare(cellMap.at(i).at(j).color, cellMap.at((i + 1) % cellMap.size()).at(j).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// bottom
+				if (colorCompare(cellMap.at(i).at(j).color, cellMap.at(i).at((j + 1) % cellMap.at(i).size()).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// top-right
+				if (colorCompare(cellMap.at(i).at(j).color, cellMap.at((i + 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// bottom-right
+				if (colorCompare(cellMap.at(i).at(j).color, cellMap.at((i + 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// bottom-left
+				if (colorCompare(cellMap.at(i).at(j).color, cellMap.at((i - 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// top-left
+				if (colorCompare(cellMap.at(i).at(j).color, cellMap.at((i - 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+			}
+			else
+			{
+				// left
+				if (i > 0 && colorCompare(cellMap.at(i).at(j).color, cellMap.at(i - 1).at(j).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// top
+				if (j > 0 && colorCompare(cellMap.at(i).at(j).color, cellMap.at(i).at(j - 1).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// right
+				if (i < cellMap.size() - 1 && colorCompare(cellMap.at(i).at(j).color, cellMap.at(i + 1).at(j).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// bottom
+				if (j < cellMap.at(i).size() - 1 && colorCompare(cellMap.at(i).at(j).color, cellMap.at(i).at(j + 1).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// top-right
+				if (j > 0 && i < cellMap.size() - 1 && colorCompare(cellMap.at(i).at(j).color, cellMap.at(i + 1).at(j - 1).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// bottom-right
+				if (i < cellMap.size() - 1 && j < cellMap.at(i).size() - 1 && colorCompare(cellMap.at(i).at(j).color, cellMap.at(i + 1).at(j + 1).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// bottom-left
+				if (i > 0 && j < cellMap.at(i).size() - 1 && colorCompare(cellMap.at(i).at(j).color, cellMap.at(i - 1).at(j + 1).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+				// top-left
+				if (i > 0 && j > 0 && colorCompare(cellMap.at(i).at(j).color, cellMap.at(i - 1).at(j - 1).color))
+				{
+					edges.emplace_back(i, j, false);
+					continue;
+				}
+			}
+		}
 }

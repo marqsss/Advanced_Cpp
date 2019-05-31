@@ -47,9 +47,11 @@ public:
 	void setPalette(Palette p) { palette = p; }
 	void setColorThreshold(unsigned int ct = 50) { colorThreshold = ct; }
 	void runMC(double kt = 0);
-	void swapVisualization(bool mc); // ziarna <-> energia
+	void swapVisualization(); // ziarna <-> energia
 
 private:
+	//virtual void draw(sf::RenderTarget& target, sf::RenderStates states) ;
+
 	//void display();
 	void visualize(bool MC = false);
 	void checkNeighbours(unsigned int, unsigned int);
@@ -57,6 +59,7 @@ private:
 	inline unsigned int colorCompare(const sf::Color& c1, const sf::Color& c2);
 	void check_radius(std::vector<sf::Vector2u>& positions, unsigned int& radius, unsigned int& boredom);
 	Neighbourhood gatherEdges();
+	void gatherEdgesNaive();
 
 	std::vector<std::vector<ColorCell>> cellMap;
 	std::vector<std::tuple<unsigned int, unsigned int, bool>> edges;
@@ -70,6 +73,7 @@ private:
 	bool paused;
 	std::random_device dice;
 	unsigned int colorThreshold;
+	bool visual_energy;
 };
 
 #endif
