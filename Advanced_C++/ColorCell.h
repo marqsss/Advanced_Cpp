@@ -13,6 +13,8 @@ public:
 
 	sf::Color color;
 	sf::Color future;
+	double dislocation_density;
+	unsigned int recrystallized;
 };
 
 #endif

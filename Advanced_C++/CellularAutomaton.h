@@ -49,7 +49,7 @@ public:
 	void runMC(double kt = 0);
 	void swapVisualization(); // ziarna <-> energia
 
-private:
+protected:
 	//virtual void draw(sf::RenderTarget& target, sf::RenderStates states) ;
 
 	//void display();
