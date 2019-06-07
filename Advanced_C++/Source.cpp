@@ -16,6 +16,7 @@
 #include "GOL1D.h"
 #include "GOL2D.h"
 #include "CellularAutomaton.h"
+#include "CARecrystallizer.h"
 // Utility
 #include "SimpleFPS.h"
 #include "QuickButtons.h"
@@ -31,7 +32,6 @@ int main()
 	GOL2D twoD;
 	unsigned int twoDScale;
 	RAMTest::initialize();
-	CellularAutomaton ca;
 
 	while (!valid)
 		switch (choice)
@@ -68,7 +68,6 @@ int main()
 				choice = 0;
 			break;
 		case 5:
-			ca.resize(sf::Vector2u(250, 250));
 			valid = true;
 			break;
 		default:
@@ -424,7 +423,15 @@ int main()
 		sf::Vector2f viewScale = sf::Vector2f(window.getView().getSize().x / window.getSize().x, window.getView().getSize().y / window.getSize().y);
 		sf::Vector2f mousePos;
 		sf::Event event;
-		ca.resize(sf::Vector2u(120, 120));
+
+		// CA setup
+		CARecrystallizer ca;
+		ca.setA(86710969050178.5);
+		ca.setB(9.41268203527779);
+		ca.setTemperature(900);
+		ca.setTotalTime(0.2);
+		ca.setCritical(4215840142323.42);
+		ca.resize(sf::Vector2u(60, 60));
 		ca.setPosition(0, 0);
 		ca.setScale(5, 5);
 		ca.setBC(true);
@@ -438,7 +445,7 @@ int main()
 		menuBackground.setOutlineColor(sf::Color::Black);
 
 		// button setup
-		unsigned int n_button = 14;
+		unsigned int n_button = 15;
 		sf::Texture buttonTex;
 		buttonTex.loadFromFile("..\\Advanced_C++\\resources\\graphics\\buttons.bmp");
 		std::vector<sf::Sprite> buttonSpr(n_button);
@@ -475,6 +482,9 @@ int main()
 		buttonSpr.at(13).setTextureRect(sf::IntRect(0, 150, 200, 50));
 		buttonSpr.at(13).setPosition(sf::Vector2f(780, 510));
 		buttonSpr.at(13).setScale(.5, .5);
+		buttonSpr.at(14).setTexture(buttonTex, true);
+		buttonSpr.at(14).setTextureRect(sf::IntRect(250, 150, 50, 50));
+		buttonSpr.at(14).setPosition(sf::Vector2f(630, 360));
 		for (auto& b : buttonSpr)
 			b.setColor(sf::Color(195, 195, 195, 255));
 		for (auto i = 0; i < 12; ++i)
@@ -516,6 +526,7 @@ int main()
 			text_field.at(i).setString(text.at(i));
 		// text field: sprite {texture, text; string; active; backspace; write; isempty; isactive; getstring; makeactive(v<>)}
 
+		int drawing_mode = 1;
 
 		// window launch
 		while (window.isOpen())
@@ -559,13 +570,13 @@ int main()
 						else if (buttonSpr.at(3).getGlobalBounds().contains(mousePos))
 						{//Step
 							printf("step\n");
-							if (ca.is_paused())
-								ca.run();
+							ca.run();
 						}
 						else if (buttonSpr.at(1).getGlobalBounds().contains(mousePos))
 						{//Disabled
 							printf("swap visual\n");
-							ca.swapVisualization();
+							ca.drawing_mode(drawing_mode);
+							drawing_mode = (drawing_mode + 1) % 3;
 						}
 						else if (buttonSpr.at(0).getGlobalBounds().contains(mousePos))
 						{//Reset
@@ -621,6 +632,11 @@ int main()
 						else if (buttonSpr.at(11).getGlobalBounds().contains(mousePos))
 						{// Seed by hand
 							printf("Seeding by hand (not implemented)\n");
+						}
+						else if (buttonSpr.at(14).getGlobalBounds().contains(mousePos))
+						{// Recrystallize
+							printf("Recrystallizing\n");
+							ca.recrystallize(80, true, "../Advanced_C++/resources/recrystallization.txt");
 						}
 
 						// regardless of where the click was

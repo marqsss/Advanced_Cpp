@@ -213,7 +213,7 @@ void CellularAutomaton::seedWithRadius(unsigned int n_seeds, unsigned int radius
 
 void CellularAutomaton::runMC(double kt)
 {
-	if (kt > .1 || kt < -6)
+	if (kt < .1 || kt >6)
 		return;
 	auto n = gatherEdges();
 	/*gatherEdgesNaive();
@@ -233,7 +233,7 @@ void CellularAutomaton::runMC(double kt)
 
 	while (no_used < edges.size())
 	{
-		printf("Progress: %f\%\n", 1.*no_used / edges.size());
+		//printf("Progress: %f\%\n", 1.*no_used / edges.size());
 		std::vector<unsigned int> nr(seeds.size());
 		// retrieve random tuple and check if it's a first check on this MC-iteration
 		auto&[i, j, used] = edges.at(dice() % edges.size());
@@ -242,6 +242,8 @@ void CellularAutomaton::runMC(double kt)
 			++no_used;
 			used = true;
 		}
+		else
+			continue;
 		// fill >nr< according to what colors are around, taking care of neighbourhood & boundary condition
 		if (boundaryCondition)
 		{
@@ -258,19 +260,19 @@ void CellularAutomaton::runMC(double kt)
 			if (n != Pentagonal_Top && check(i, j, i, (j + 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at(i).at((j + 1) % cellMap.at(i).size()).color)));
 			// top-right
-			if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Top || n == Pentagonal_Right &&
+			if ((n == Moore || n == Hexagonal_Right || n == Pentagonal_Top || n == Pentagonal_Right) &&
 				check(i, j, (i + 1) % cellMap.size(), (j - 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at((i + 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).color)));
 			// bottom-right
-			if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom &&
+			if ((n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom )&&
 				check(i, j, (i + 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at((i + 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).color)));
 			// bottom-left
-			if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left &&
+			if ((n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left )&&
 				check(i, j, (i - 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at((i - 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).color)));
 			// top-left
-			if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left &&
+			if ((n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left )&&
 				check(i, j, (i - 1) % cellMap.size(), (j - 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at((i - 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).color)));
 		}
@@ -308,12 +310,16 @@ void CellularAutomaton::runMC(double kt)
 				index = i;
 		// change to the most energy-efficient color
 		if (nr.at(index) && cellMap.at(i).at(j).color != seeds.at(index))
-			cellMap.at(i).at(j).color = cellMap.at(i).at(j).future = seeds.at(index);
+			cellMap.at(i).at(j).future = seeds.at(index);
 		// or try to change randomly, if there's no energy-positive option
-		else if (exp((1.*nr.at(index) - nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at(i).at(j).color)))) / kt) * 10000 > dice() % 10000)
-			cellMap.at(i).at(j).color = cellMap.at(i).at(j).future = seeds.at(dice() % seeds.size());
-		MCMap.setPixel(i, j, cellMap.at(i).at(j).color);
+		else if (exp(-(1.*nr.at(index) - nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at(i).at(j).color)))) / kt) * 1000 > dice() % 10000)
+			cellMap.at(i).at(j).future = seeds.at(dice() % seeds.size());
+		//MCMap.setPixel(i, j, cellMap.at(i).at(j).color);
 	} // end of MC-iteration
+	// update all futures
+	for (auto i = 0; i < cellMap.size(); ++i)
+		for (auto j = 0; j < cellMap.at(i).size(); ++j)
+			updateCell(i, j);
 }
 
 void CellularAutomaton::swapVisualization()
@@ -515,28 +521,28 @@ CellularAutomaton::Neighbourhood CellularAutomaton::gatherEdges()
 					continue;
 				}
 				// top-right
-				if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Top || n == Pentagonal_Right &&
+				if ((n == Moore || n == Hexagonal_Right || n == Pentagonal_Top || n == Pentagonal_Right) &&
 					check(i, j, (i + 1) % cellMap.size(), (j + cellMap.at(i).size() - 1) % cellMap.at(i).size()))
 				{
 					edges.emplace_back(i, j, false);
 					continue;
 				}
 				// bottom-right
-				if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom &&
+				if ((n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom) &&
 					check(i, j, (i + 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
 				{
 					edges.emplace_back(i, j, false);
 					continue;
 				}
 				// bottom-left
-				if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left &&
+				if ((n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left) &&
 					check(i, j, (i + cellMap.size() - 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
 				{
 					edges.emplace_back(i, j, false);
 					continue;
 				}
 				// top-left
-				if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left &&
+				if ((n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left) &&
 					check(i, j, (i + cellMap.size() - 1) % cellMap.size(), (j + cellMap.at(i).size() - 1) % cellMap.at(i).size()))
 				{
 					edges.emplace_back(i, j, false);

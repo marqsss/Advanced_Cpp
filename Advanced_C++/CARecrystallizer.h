@@ -11,7 +11,9 @@ public:
 		A(a), B(b), temperature(temp), total_time(time), critical(crit) {}
 	void calculateToFile(std::string path);
 	void calculateToCSV(std::string path);
-	void recrystallize(double uniform_percent, bool saveToFile, std::string path="");
+	void recrystallize(double uniform_percent, bool saveToFile, std::string path = "");
+	void drawing_mode(int mode = 0);
+	void visualize(bool MC = false) { texMap.update(imgMap); setTexture(texMap); }
 
 	void setA(double a) { A = a; }
 	void setB(double b) { B = b; }

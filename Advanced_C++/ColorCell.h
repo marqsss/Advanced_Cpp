@@ -7,7 +7,7 @@ class ColorCell
 {
 public:
 
-	ColorCell(sf::Color c = sf::Color::White) :color(c), future(sf::Color::White) {}
+	ColorCell(sf::Color c = sf::Color::White) :color(c), future(sf::Color::White), dislocation_density(0), recrystallized(0) {}
 	bool is_empty() { return color == sf::Color::White ? true : false; }
 	bool needsUpdate() { return color != future; };
 

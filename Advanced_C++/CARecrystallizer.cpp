@@ -45,13 +45,25 @@ void CARecrystallizer::calculateToCSV(std::string path)
 
 void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 {
+	std::ofstream file;
 	if (save)
 	{
-
+		file.open(path);
+		if (!file.is_open())
+			printf("ERROR opening output file'n");
 	}
 	auto turn = 0;
-	for (auto t = 0; t < total_time; t += total_time / 1000)
+	for (double t = 0; t < total_time; t += total_time / 100)
 	{
+		// file output
+		if (save)
+		{
+			double ro_a = 0;
+			for (auto& row : cellMap)
+				for (auto& cell : row)
+					ro_a += cell.dislocation_density;
+			file << "time = " << t << "\tro_c = " << getRo(t) << "\t, ro_a = " << ro_a << "\n";
+		}
 		// calculate deltaRo and distribute the uniform part
 		auto deltaRo = getRo(t + total_time / 1000) - getRo(t);
 		auto deltaRoUniform = deltaRo * x / 100.;
@@ -62,11 +74,11 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 				cell.dislocation_density = deltaRoUniform;
 		// calculate packets and distribute them
 		auto n = gatherEdges();
-		auto packetNo = cellMap.size() * cellMap.at(0).size() * 100;
+		auto packetNo = cellMap.size() * cellMap.at(0).size();
 		auto deltaRoPacket = deltaRo / packetNo;
 		for (auto i = 0; i < packetNo; ++i)
 		{
-			if (dice() % 10 < 2) // on edge
+			if (dice() % 10 > 1) // on edge
 			{
 				auto[x, y, b] = edges.at(dice() % edges.size());
 				cellMap.at(x).at(y).dislocation_density += deltaRoPacket;
@@ -78,11 +90,13 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 		}
 		// check for new nuclei
 		for (auto&[a, b, e] : edges)
-			if (cellMap.at(a).at(b).dislocation_density > critical)
+			if (cellMap.at(a).at(b).dislocation_density > (critical / cellMap.size() / cellMap.at(0).size()))
 			{
 				cellMap.at(a).at(b).recrystallized = turn;
 				cellMap.at(a).at(b).dislocation_density = 0;
-				updateCell(a, b, sf::Color(palette == 0 ? dice() % 255 : 0, palette == 1 ? dice() % 255 : 0, palette == 2 ? dice() % 255 : 0));
+				auto color = sf::Color(dice() % 255, 0, 0);
+				updateCell(a, b, color);
+				//texMap.update(color., 1, 1, a, b);
 			}
 		// grow existing nuclei
 		auto check = [&](auto k, auto l, auto x, auto y) -> bool {
@@ -94,14 +108,23 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 				// do not check those already recrystallized
 				if (cellMap.at(i).at(j).recrystallized)
 					continue;
+				// get ready and check neighbours
+				unsigned int n = neighbourhood;
+				if (n == Random)
+					n = dice() % 8;
+				else if (n == Hexagonal_Random)
+					n = dice() % 2 + Hexagonal_Left;
+				else if (n == Pentagonal_Random)
+					n = dice() % 4 + Pentagonal_Left;
 				bool highest = true;
 				auto recrystNeighb_x = 0, recrystNeighb_y = 0;
+
 				if (boundaryCondition)
 				{
 					// left
 					if ((n != Pentagonal_Right))
 					{
-						if (check(i, j, (i + cellMap.size() - 1) % cellMap.size(), j))
+						if (check(i, j, (i - 1) % cellMap.size(), j))
 							highest = false;
 						if (cellMap.at((i - 1) % cellMap.size()).at(j).recrystallized == turn - 1)
 						{
@@ -110,50 +133,81 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 						}
 					}
 					// top
-					if ((n != Pentagonal_Bottom) && check(i, j, i, (j + cellMap.at(i).size() - 1) % cellMap.at(i).size()))
+					if ((n != Pentagonal_Bottom))
 					{
-						edges.emplace_back(i, j, false);
-						continue;
+						if (check(i, j, i, (j - 1) % cellMap.at(i).size()))
+							highest = false;
+						if (cellMap.at(i).at((j - 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						{
+							recrystNeighb_x = i;
+							recrystNeighb_y = (j - 1) % cellMap.at(i).size();
+						}
 					}
 					// right
-					if ((n != Pentagonal_Left) && check(i, j, (i + 1) % cellMap.size(), j))
+					if ((n != Pentagonal_Left))
 					{
-						edges.emplace_back(i, j, false);
-						continue;
+						if (check(i, j, (i + 1) % cellMap.size(), j))
+							highest = false;
+						if (cellMap.at((i + 1) % cellMap.size()).at(j).recrystallized == turn - 1)
+						{
+							recrystNeighb_x = (i + 1) % cellMap.size();
+							recrystNeighb_y = j;
+						}
 					}
 					// bottom
-					if ((n != Pentagonal_Top) && check(i, j, i, (j + 1) % cellMap.at(i).size()))
+					if ((n != Pentagonal_Top))
 					{
-						edges.emplace_back(i, j, false);
-						continue;
+						if (check(i, j, i, (j + 1) % cellMap.at(i).size()))
+							highest = false;
+						if (cellMap.at(i).at((j + 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						{
+							recrystNeighb_x = i;
+							recrystNeighb_y = (j + 1) % cellMap.at(i).size();
+						}
 					}
 					// top-right
-					if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Top || n == Pentagonal_Right &&
-						check(i, j, (i + 1) % cellMap.size(), (j + cellMap.at(i).size() - 1) % cellMap.at(i).size()))
+					if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Top || n == Pentagonal_Right)
 					{
-						edges.emplace_back(i, j, false);
-						continue;
+						if (check(i, j, (i + 1) % cellMap.size(), (j - 1) % cellMap.at(i).size()))
+							highest = false;
+						if (cellMap.at((i + 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						{
+							recrystNeighb_x = (i + 1) % cellMap.size();
+							recrystNeighb_y = (j - 1) % cellMap.at(i).size();
+						}
 					}
 					// bottom-right
-					if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom &&
-						check(i, j, (i + 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
+					if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom)
 					{
-						edges.emplace_back(i, j, false);
-						continue;
+						if (check(i, j, (i + 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
+							highest = false;
+						if (cellMap.at((i + 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						{
+							recrystNeighb_x = (i + 1) % cellMap.size();
+							recrystNeighb_y = (j + 1) % cellMap.at(i).size();
+						}
 					}
 					// bottom-left
-					if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left &&
-						check(i, j, (i + cellMap.size() - 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
+					if (n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left)
 					{
-						edges.emplace_back(i, j, false);
-						continue;
+						if (check(i, j, (i - 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
+							highest = false;
+						if (cellMap.at((i - 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						{
+							recrystNeighb_x = (i - 1) % cellMap.size();
+							recrystNeighb_y = (j + 1) % cellMap.at(i).size();
+						}
 					}
 					// top-left
-					if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left &&
-						check(i, j, (i + cellMap.size() - 1) % cellMap.size(), (j + cellMap.at(i).size() - 1) % cellMap.at(i).size()))
+					if (n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left)
 					{
-						edges.emplace_back(i, j, false);
-						continue;
+						if (check(i, j, (i - 1) % cellMap.size(), (j - 1) % cellMap.at(i).size()))
+							highest = false;
+						if (cellMap.at((i - 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						{
+							recrystNeighb_x = (i - 1) % cellMap.size();
+							recrystNeighb_y = (j - 1) % cellMap.at(i).size();
+						}
 					}
 				}
 				else
@@ -208,13 +262,54 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					}
 				}
 				if (highest && recrystNeighb_x)
-					updateCell(i, j, cellMap.at(recrystNeighb_x).at(recrystNeighb_y).color);
-			}
-		/*t
-		getRo(t)
-		getSigma(getRo(t))*/
+					cellMap.at(i).at(j).future = cellMap.at(recrystNeighb_x).at(recrystNeighb_y).future;
+			} // grow nuclei loop
+		// update all cells
+		for (auto i = 0; i < cellMap.size(); ++i)
+			for (auto j = 0; j < cellMap.at(i).size(); ++j)
+				updateCell(i, j);
 		++turn;
+		//visualize();
 	}
+	if (save)
+		file.close();
+}
+
+void CARecrystallizer::drawing_mode(int mode)
+{
+	sf::Image temp;
+	if (mode == 1)
+	{
+		temp.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
+		gatherEdges();
+		for (auto i = 0; i < edges.size(); ++i)
+		{
+			auto[x, y, d] = edges.at(i);
+			temp.setPixel(x, y, cellMap.at(x).at(y).color);
+		}
+	}
+	if (mode == 2)
+	{
+		temp.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
+		double maxDisloc = 0;
+		for (auto& row : cellMap)
+			for (auto& cell : row)
+				if (cell.dislocation_density > maxDisloc)
+					maxDisloc = cell.dislocation_density;
+		for (auto i = 0; i < cellMap.size(); ++i)
+			for (auto j = 0; j < cellMap.at(i).size(); ++j)
+				temp.setPixel(i, j, sf::Color(cellMap.at(i).at(j).dislocation_density / maxDisloc * 255, 0, 0));
+	}
+	else
+	{
+		temp.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
+		for (auto i = 0; i < cellMap.size(); ++i)
+			for (auto j = 0; j < cellMap.at(i).size(); ++j)
+				temp.setPixel(i, j, cellMap.at(i).at(j).color);
+	}
+	texMap.create(cellMap.size(), cellMap.at(0).size());
+	texMap.update(temp);
+	setTexture(texMap);
 }
 
 // PRIVATE ////////////////////////////////////////////////////////////////////

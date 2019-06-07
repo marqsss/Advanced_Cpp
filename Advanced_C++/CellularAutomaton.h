@@ -46,7 +46,7 @@ public:
 	void setBC(bool bc) { boundaryCondition = bc; }
 	void setPalette(Palette p) { palette = p; }
 	void setColorThreshold(unsigned int ct = 50) { colorThreshold = ct; }
-	void runMC(double kt = 0);
+	void runMC(double kt = 0.2);
 	void swapVisualization(); // ziarna <-> energia
 
 protected:
