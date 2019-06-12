@@ -31,6 +31,7 @@ protected:
 	public:
 		unsigned int neighbours;
 		bool status;
+		bool operator==(const Cell& right) const { return this == &right; }
 	};
 	std::vector<std::vector<Cell> > cellMap;
 	std::vector<unsigned int> lifeMap;

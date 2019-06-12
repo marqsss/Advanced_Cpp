@@ -94,20 +94,104 @@ int main()
 		{
 			sf::ContextSettings settings;
 			settings.antialiasingLevel = 0;
-			sf::RenderWindow window(sf::VideoMode(800, 600), "Game of Life", sf::Style::Default, settings);
+			sf::RenderWindow window(sf::VideoMode(900, 600), "Game of Life", sf::Style::Default, settings);
 			//window.setView(sf::View(sf::FloatRect(0, 0, 100, 75)));
 			sf::Vector2f viewScale = sf::Vector2f(window.getView().getSize().x / window.getSize().x, window.getView().getSize().y / window.getSize().y);
 			sf::Vector2f mousePos;
 			sf::Event event;
 
-			// buttons setup: playback, back, pause, forward, play
-			QuickButtons butSpr;
+			// menu background
+			sf::RectangleShape menuBackground(sf::Vector2f(300, 600));
+			menuBackground.setFillColor(sf::Color(195, 195, 195, 255));
+			menuBackground.setPosition(601, 0);
+			menuBackground.setOutlineThickness(1);
+			menuBackground.setOutlineColor(sf::Color::Black);
+
+			// button setup
+			unsigned int n_button = 15;
+			sf::Texture buttonTex;
+			buttonTex.loadFromFile("..\\Advanced_C++\\resources\\graphics\\buttons.bmp");
+			std::vector<sf::Sprite> buttonSpr(n_button);
+			std::vector<sf::Sprite> buttonNH(12);
+			// rev - back - play/pause - next - ffw
 			for (auto i = 0; i < 5; ++i)
 			{
-				butSpr.newButton("../Advanced_C++/resources/graphics/buttons.bmp",
-					sf::IntRect(100 * i, 0, 100, 100), sf::Vector2f(540 + 50 * i, 10));
-				butSpr.getButton(i).setScale(.5, .5);
+				sf::IntRect area(100 * i, 0, 100, 100);
+				buttonSpr.at(i).setTexture(buttonTex, true);
+				buttonSpr.at(i).setTextureRect(area);
+				buttonSpr.at(i).setPosition(sf::Vector2f(640 + 50 * i, 10));
+				buttonSpr.at(i).setScale(.5, .5);
 			}
+			// text field background 1
+			buttonSpr.at(5).setTexture(buttonTex, true);
+			buttonSpr.at(5).setTextureRect(sf::IntRect(0, 150, 200, 50));
+			buttonSpr.at(5).setPosition(sf::Vector2f(660, 110));
+			buttonSpr.at(5).setScale(.5, .5);
+			// text field background 2
+			buttonSpr.at(6).setTexture(buttonTex, true);
+			buttonSpr.at(6).setTextureRect(sf::IntRect(0, 150, 200, 50));
+			buttonSpr.at(6).setPosition(sf::Vector2f(780, 110));
+			buttonSpr.at(6).setScale(.5, .5);
+			// RESIZE
+			buttonSpr.at(7).setTexture(buttonTex, true);
+			buttonSpr.at(7).setTextureRect(sf::IntRect(0, 100, 200, 50));
+			buttonSpr.at(7).setPosition(sf::Vector2f(670, 145));
+			// TODO
+			for (auto i = 8; i < 12; ++i)
+			{
+				buttonSpr.at(i).setTexture(buttonTex);
+				buttonSpr.at(i).setTextureRect(sf::IntRect(400 + 50 * (i % 2), 100 + 50 * ((i - 8) / 2), 50, 50));
+				buttonSpr.at(i).setPosition(685 + 50 * (i - 8), 225);
+			}buttonSpr.at(12).setTexture(buttonTex, true);
+			buttonSpr.at(12).setTextureRect(sf::IntRect(0, 150, 200, 50));
+			buttonSpr.at(12).setPosition(sf::Vector2f(660, 510));
+			buttonSpr.at(12).setScale(.5, .5);
+			buttonSpr.at(13).setTexture(buttonTex, true);
+			buttonSpr.at(13).setTextureRect(sf::IntRect(0, 150, 200, 50));
+			buttonSpr.at(13).setPosition(sf::Vector2f(780, 510));
+			buttonSpr.at(13).setScale(.5, .5);
+			buttonSpr.at(14).setTexture(buttonTex, true);
+			buttonSpr.at(14).setTextureRect(sf::IntRect(250, 150, 50, 50));
+			buttonSpr.at(14).setPosition(sf::Vector2f(630, 360));
+			for (auto& b : buttonSpr)
+				b.setColor(sf::Color(195, 195, 195, 255));
+			for (auto i = 0; i < 12; ++i)
+			{
+				buttonNH.at(i).setTexture(buttonTex);
+				buttonNH.at(i).setTextureRect(sf::IntRect(200 + 50 * (i % 6), 200 + 50 * (i / 6), 50, 50));
+				buttonNH.at(i).setPosition(685 + 50 * (i % 4), 295 + 50 * (i / 4));
+			}
+			for (auto& b : buttonNH)
+				b.setColor(sf::Color(195, 195, 195, 255));
+			buttonNH.at(0).setColor(sf::Color::White);
+
+			// text field setup
+			sf::Font arial;
+			arial.loadFromFile("../Advanced_C++/resources/fonts/arial.ttf");
+			unsigned int text_no = 4;
+			std::vector<bool>text_active(text_no);
+			std::vector<sf::String> text(text_no);
+			std::vector<sf::Text> text_field(text_no);
+			for (auto i = 0; i < text_field.size(); ++i)
+			{
+				text_field.at(i).setString(text.at(i));
+				text_field.at(i).setFont(arial);
+				text_field.at(i).setCharacterSize(14);
+				text_field.at(i).setFillColor(sf::Color::Black);
+			}
+			text_field.at(0).setPosition(665, 115);
+			text_field.at(1).setPosition(785, 115);
+			text_field.at(2).setPosition(665, 515);
+			text_field.at(3).setPosition(785, 515);
+			sf::Text size_tooltip("W:                           H:", arial, 14);
+			size_tooltip.setFillColor(sf::Color::Black);
+			size_tooltip.setPosition(640, 115);
+			text.at(0) = std::to_string(ca.getSize().x);
+			text.at(1) = std::to_string(ca.getSize().y);
+			text.at(2) = "10";
+			text.at(3) = "0";
+			for (auto i = 0; i < text.size(); ++i)
+				text_field.at(i).setString(text.at(i));
 
 			while (window.isOpen())
 			{
@@ -153,7 +237,7 @@ int main()
 						case sf::Keyboard::V: // next (if paused)
 							if (GOL.paused())
 							{
-								GOL.run();
+								GOL.alt_run();
 								GOL.describe();
 								//GOL.print();
 							}
@@ -211,7 +295,7 @@ int main()
 							printf("forward\n");
 							if (GOL.paused())
 							{
-								GOL.run();
+								GOL.alt_run();
 								GOL.describe();
 								//GOL.print();
 							}
@@ -235,7 +319,7 @@ int main()
 
 				if (!GOL.paused())
 				{
-					GOL.direction() ? GOL.run() : GOL.unrun();
+					GOL.direction() ? GOL.alt_run() : GOL.unrun();
 					//GOL.describe();
 					//GOL.print();
 					//std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -243,12 +327,12 @@ int main()
 
 				window.clear(sf::Color(0, 0, 128, 255));
 				window.draw(GOL);
-				for (auto i = 0; i < 5; ++i)
-					window.draw(butSpr.getButton(i));
+				//for (auto i = 0; i < 5; ++i)
+					//window.draw(butSpr.getButton(i));
 				//window.draw(butSpr);
 				window.display();
 
-				//printf("FPS: %f\n", fps(60));
+				printf("FPS: %f\n", fps(100));
 			} // while window.is_open
 
 			GOL.describe();
