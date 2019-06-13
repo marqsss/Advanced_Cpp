@@ -34,6 +34,7 @@ bool SFGOL::paused()
 
 void SFGOL::resizeMap(unsigned int w, unsigned int h)
 {
+	cellMap.clear();
 	cellMap.resize(h);
 	for (auto &i : cellMap)
 		i.resize(w);
@@ -271,6 +272,9 @@ bool SFGOL::offsetFromRLE(std::filesystem::path p, unsigned int offsetX, unsigne
 	std::ifstream f(p.c_str());
 	if (f.is_open())
 	{
+		name = author = description = "";
+		lifeMap.clear();
+		reviveMap.clear();
 		std::string s;
 		unsigned int x, y;
 		while (!f.eof())

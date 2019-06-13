@@ -167,6 +167,13 @@ double SFGOLConcurrent::getMaxHistories(uint64_t capacity, bool actual)
 	return 0;
 }
 
+void SFGOLConcurrent::resize(sf::Vector2u size)
+{
+	height = size.x;
+	width = size.y;
+	resizeMap(width, height);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE
 ///////////////////////////////////////////////////////////////////////////////

@@ -119,56 +119,62 @@ int main()
 				sf::IntRect area(100 * i, 0, 100, 100);
 				buttonSpr.at(i).setTexture(buttonTex, true);
 				buttonSpr.at(i).setTextureRect(area);
-				buttonSpr.at(i).setPosition(sf::Vector2f(640 + 50 * i, 10));
+				buttonSpr.at(i).setPosition(sf::Vector2f(625 + 50 * i, 10));
 				buttonSpr.at(i).setScale(.5, .5);
 			}
 			// text field background 1
 			buttonSpr.at(5).setTexture(buttonTex, true);
 			buttonSpr.at(5).setTextureRect(sf::IntRect(0, 150, 200, 50));
-			buttonSpr.at(5).setPosition(sf::Vector2f(660, 110));
+			buttonSpr.at(5).setPosition(sf::Vector2f(650, 110));
 			buttonSpr.at(5).setScale(.5, .5);
 			// text field background 2
 			buttonSpr.at(6).setTexture(buttonTex, true);
 			buttonSpr.at(6).setTextureRect(sf::IntRect(0, 150, 200, 50));
-			buttonSpr.at(6).setPosition(sf::Vector2f(780, 110));
+			buttonSpr.at(6).setPosition(sf::Vector2f(770, 110));
 			buttonSpr.at(6).setScale(.5, .5);
 			// RESIZE
 			buttonSpr.at(7).setTexture(buttonTex, true);
 			buttonSpr.at(7).setTextureRect(sf::IntRect(0, 100, 200, 50));
-			buttonSpr.at(7).setPosition(sf::Vector2f(670, 145));
-			// TODO
-			for (auto i = 8; i < 12; ++i)
+			buttonSpr.at(7).setPosition(sf::Vector2f(650, 145));
+			// patern loading
+			for (auto i = 8; i < 10; ++i)
 			{
 				buttonSpr.at(i).setTexture(buttonTex);
-				buttonSpr.at(i).setTextureRect(sf::IntRect(400 + 50 * (i % 2), 100 + 50 * ((i - 8) / 2), 50, 50));
-				buttonSpr.at(i).setPosition(685 + 50 * (i - 8), 225);
-			}buttonSpr.at(12).setTexture(buttonTex, true);
+				buttonSpr.at(i).setTextureRect(sf::IntRect(300 + 50 * (i % 2), 150, 50, 50));
+				buttonSpr.at(i).setPosition(700 + 50 * (i - 8), 275);
+			}
+			// STRATEGY
+			int strategy = 0;
+			buttonSpr.at(10).setTexture(buttonTex, true);
+			buttonSpr.at(10).setTextureRect(sf::IntRect(200, 100, 200, 50));
+			buttonSpr.at(10).setPosition(sf::Vector2f(650, 460));
+			// text field background 5
+			int fpsLimit = 60;
+			buttonSpr.at(11).setTexture(buttonTex, true);
+			buttonSpr.at(11).setTextureRect(sf::IntRect(0, 150, 200, 50));
+			buttonSpr.at(11).setPosition(sf::Vector2f(700, 345));
+			buttonSpr.at(11).setScale(.5, .5);
+			// text field background 3
+			buttonSpr.at(12).setTexture(buttonTex, true);
 			buttonSpr.at(12).setTextureRect(sf::IntRect(0, 150, 200, 50));
-			buttonSpr.at(12).setPosition(sf::Vector2f(660, 510));
+			buttonSpr.at(12).setPosition(sf::Vector2f(650, 240));
 			buttonSpr.at(12).setScale(.5, .5);
+			// text field background 4
 			buttonSpr.at(13).setTexture(buttonTex, true);
 			buttonSpr.at(13).setTextureRect(sf::IntRect(0, 150, 200, 50));
-			buttonSpr.at(13).setPosition(sf::Vector2f(780, 510));
+			buttonSpr.at(13).setPosition(sf::Vector2f(770, 240));
 			buttonSpr.at(13).setScale(.5, .5);
+			// DESCRIBE
 			buttonSpr.at(14).setTexture(buttonTex, true);
-			buttonSpr.at(14).setTextureRect(sf::IntRect(250, 150, 50, 50));
-			buttonSpr.at(14).setPosition(sf::Vector2f(630, 360));
+			buttonSpr.at(14).setTextureRect(sf::IntRect(0, 200, 200, 50));
+			buttonSpr.at(14).setPosition(sf::Vector2f(650, 410));
 			for (auto& b : buttonSpr)
 				b.setColor(sf::Color(195, 195, 195, 255));
-			for (auto i = 0; i < 12; ++i)
-			{
-				buttonNH.at(i).setTexture(buttonTex);
-				buttonNH.at(i).setTextureRect(sf::IntRect(200 + 50 * (i % 6), 200 + 50 * (i / 6), 50, 50));
-				buttonNH.at(i).setPosition(685 + 50 * (i % 4), 295 + 50 * (i / 4));
-			}
-			for (auto& b : buttonNH)
-				b.setColor(sf::Color(195, 195, 195, 255));
-			buttonNH.at(0).setColor(sf::Color::White);
 
 			// text field setup
 			sf::Font arial;
 			arial.loadFromFile("../Advanced_C++/resources/fonts/arial.ttf");
-			unsigned int text_no = 4;
+			unsigned int text_no = 7;
 			std::vector<bool>text_active(text_no);
 			std::vector<sf::String> text(text_no);
 			std::vector<sf::Text> text_field(text_no);
@@ -179,19 +185,32 @@ int main()
 				text_field.at(i).setCharacterSize(14);
 				text_field.at(i).setFillColor(sf::Color::Black);
 			}
-			text_field.at(0).setPosition(665, 115);
-			text_field.at(1).setPosition(785, 115);
-			text_field.at(2).setPosition(665, 515);
-			text_field.at(3).setPosition(785, 515);
+			text_field.at(0).setPosition(655, 115);
+			text_field.at(1).setPosition(775, 115);
+			text_field.at(2).setPosition(655, 245);
+			text_field.at(3).setPosition(775, 245);
+			text_field.at(4).setOrigin(sf::Vector2f(text_field.at(4).getLocalBounds().width / 2, 0));
+			text_field.at(4).setPosition(755, 515);
+			text_field.at(5).setPosition(5, 580);
+			text_field.at(6).setPosition(705, 350);
+			auto updateText = [](sf::String &s, sf::Text & t) {
+				t.setString(s);
+				t.setOrigin(sf::Vector2f(t.getLocalBounds().width / 2, 0));
+			};
 			sf::Text size_tooltip("W:                           H:", arial, 14);
 			size_tooltip.setFillColor(sf::Color::Black);
-			size_tooltip.setPosition(640, 115);
-			text.at(0) = std::to_string(ca.getSize().x);
-			text.at(1) = std::to_string(ca.getSize().y);
+			size_tooltip.setPosition(630, 115);
+			sf::Text size_tooltip2("X:                           Y:", arial, 14);
+			size_tooltip2.setFillColor(sf::Color::Black);
+			size_tooltip2.setPosition(635, 245);
+			text.at(0) = std::to_string(GOL.getSize().x);
+			text.at(1) = std::to_string(GOL.getSize().y);
 			text.at(2) = "10";
 			text.at(3) = "0";
+			text.at(6) = std::to_string(fpsLimit);
 			for (auto i = 0; i < text.size(); ++i)
 				text_field.at(i).setString(text.at(i));
+			updateText(text.at(4) = "sequential", text_field.at(4));
 
 			while (window.isOpen())
 			{
@@ -202,57 +221,29 @@ int main()
 					case sf::Event::KeyPressed:
 						switch (event.key.code)
 						{
-						case sf::Keyboard::Space: // pause/resume
-							//fall-through
-						case sf::Keyboard::C:
-							GOL.pause();
-							GOL.describe();
+						case sf::Keyboard::Backspace:
+							for (auto i = 0; i < text_field.size(); ++i)
+								if (text_active.at(i) && text.at(i).getSize())
+								{
+									text.at(i).erase(text.at(i).getSize() - 1, 1);
+									text_field.at(i).setString(text.at(i));
+								}
 							break;
-						case sf::Keyboard::Z: // set backwards
-							if (GOL.paused())
-							{
-								GOL.forwards(false);
-								GOL.describe();
-							}
-							else
-								GOL.pause();
-							break;
-						case sf::Keyboard::B: // set forwards
-							if (GOL.paused())
-							{
-								GOL.forwards();
-								GOL.describe();
-							}
-							else
-								GOL.pause();
-							break;
-						case sf::Keyboard::X: // prev (if paused)
-							if (GOL.paused())
-							{
-								GOL.unrun();
-								GOL.describe();
-								//GOL.print();
-							}
-							break;
-						case sf::Keyboard::V: // next (if paused)
-							if (GOL.paused())
-							{
-								GOL.alt_run();
-								GOL.describe();
-								//GOL.print();
-							}
-							break;
-						case sf::Keyboard::N: // histories
-							if (GOL.paused())
-							{
-								printf("Max safe RAM: %u\n", RAMTest::getSafeRAM());
-								printf("Histories: %f\n", GOL.getMaxHistories(RAMTest::getSafeRAM(), true));
-								printf("Max histories: %f\n", static_cast<long double>(RAMTest::getSafeRAM()) / GOL.getMaxHistories(RAMTest::getSafeRAM(), true));
-							}
+						case sf::Keyboard::Enter:
+							for (auto i = 0; i < text_active.size(); ++i)
+								text_active.at(i) = false;
+							GOL.resize(sf::Vector2u(
+								text.at(0).isEmpty() ? GOL.getSize().x : std::stoul(text.at(0).toAnsiString()),
+								text.at(1).isEmpty() ? GOL.getSize().y : std::stoul(text.at(1).toAnsiString())));
+							fpsLimit = text.at(6).isEmpty() ? 60 : std::stoul(text.at(6).toAnsiString());
 							break;
 						}
 						break;
 					case sf::Event::MouseButtonPressed:
+						//deactivate text fields
+						for (auto i = 0; i < text_active.size(); ++i)
+							text_active.at(i) = false;
+
 						mousePos = sf::Vector2f(static_cast<float>(sf::Mouse::getPosition(window).x)*viewScale.x,
 							static_cast<float>(sf::Mouse::getPosition(window).y)*viewScale.y);
 						//printf("Mouse raw pos: (%f:%f)\n", static_cast<float>(sf::Mouse::getPosition(window).x), static_cast<float>(sf::Mouse::getPosition(window).y));
@@ -261,55 +252,169 @@ int main()
 						if (GOL.paused() && GOL.contains(mousePos))
 							GOL.setCell(static_cast<unsigned int>(mousePos.x*GOL.getScale().x - GOL.getSpriteOffset().x),
 								static_cast<unsigned int>(mousePos.y*GOL.getScale().y - GOL.getSpriteOffset().y), SFGOL::OPPOSITE);
-						//pause
-						if (butSpr.getButton(2).getGlobalBounds().contains(mousePos))
-						{
-							printf("pause\n");
-							GOL.pause();
-							GOL.describe();
-						}
 						//playback
-						if (butSpr.getButton(0).getGlobalBounds().contains(mousePos))
+						if (buttonSpr.at(0).getGlobalBounds().contains(mousePos))
 						{
 							printf("playback\n");
 							if (GOL.paused())
 							{
 								GOL.forwards(false);
-								GOL.describe();
+								//GOL.describe();
 							}
 						}
 						//back
-						if (butSpr.getButton(1).getGlobalBounds().contains(mousePos))
+						if (buttonSpr.at(1).getGlobalBounds().contains(mousePos))
 						{
 							printf("back\n");
 							if (GOL.paused())
 							{
 								GOL.unrun();
-								GOL.describe();
+								//GOL.describe();
 								//GOL.print();
 							}
 						}
+						//pause
+						if (buttonSpr.at(2).getGlobalBounds().contains(mousePos))
+						{
+							printf("pause\n");
+							GOL.pause();
+							//GOL.describe();
+						}
 						//forward
-						if (butSpr.getButton(3).getGlobalBounds().contains(mousePos))
+						if (buttonSpr.at(3).getGlobalBounds().contains(mousePos))
 						{
 							printf("forward\n");
 							if (GOL.paused())
 							{
-								GOL.alt_run();
-								GOL.describe();
+								GOL.run();
+								//GOL.describe();
 								//GOL.print();
 							}
 						}
 						//play
-						if (butSpr.getButton(4).getGlobalBounds().contains(mousePos))
+						if (buttonSpr.at(4).getGlobalBounds().contains(mousePos))
 						{
 							printf("play\n");
 							if (GOL.paused())
 							{
 								GOL.forwards();
-								GOL.describe();
+								//GOL.describe();
 							}
 						}
+						// TFB 1
+						if (buttonSpr.at(5).getGlobalBounds().contains(mousePos))
+						{
+							text_active.at(0) = true;
+							printf("text field 1 active\n");
+						}
+						// TFB 2
+						if (buttonSpr.at(6).getGlobalBounds().contains(mousePos))
+						{
+							text_active.at(1) = true;
+							printf("text field 2 active\n");
+						}
+						// RESIZE
+						if (buttonSpr.at(7).getGlobalBounds().contains(mousePos))
+						{
+							GOL.resize(sf::Vector2u(
+								text.at(0).isEmpty() ? GOL.getSize().x : std::stoul(text.at(0).toAnsiString()),
+								text.at(1).isEmpty() ? GOL.getSize().y : std::stoul(text.at(1).toAnsiString())));
+						}
+						// pattern input 1
+						if (buttonSpr.at(8).getGlobalBounds().contains(mousePos))
+						{
+							GOL.resize(sf::Vector2u(
+								text.at(0).isEmpty() ? GOL.getSize().x : std::stoul(text.at(0).toAnsiString()),
+								text.at(1).isEmpty() ? GOL.getSize().y : std::stoul(text.at(1).toAnsiString())));
+							GOL.offsetFromRLE("../Advanced_C++/resources/GOL_files/Gosper_glider_gun.rle",
+								text.at(2).isEmpty() ? 0 : std::stoul(text.at(2).toAnsiString()),
+								text.at(3).isEmpty() ? 0 : std::stoul(text.at(3).toAnsiString()));
+						}
+						// pattern input 2
+						if (buttonSpr.at(9).getGlobalBounds().contains(mousePos))
+						{
+							GOL.resize(sf::Vector2u(
+								text.at(0).isEmpty() ? GOL.getSize().x : std::stoul(text.at(0).toAnsiString()),
+								text.at(1).isEmpty() ? GOL.getSize().y : std::stoul(text.at(1).toAnsiString())));
+							GOL.offsetFromRLE("../Advanced_C++/resources/GOL_files/Queen_Bee_Shuttle.rle",
+								text.at(2).isEmpty() ? 0 : std::stoul(text.at(2).toAnsiString()),
+								text.at(3).isEmpty() ? 0 : std::stoul(text.at(3).toAnsiString()));
+						}
+						// STRATEGY
+						if (buttonSpr.at(10).getGlobalBounds().contains(mousePos))
+						{
+							strategy = (strategy + 1) % 3;
+							switch (strategy)
+							{
+							case 0:
+								updateText(text.at(4) = "sequential", text_field.at(4));
+								break;
+							case 1:
+								updateText(text.at(4) = "thread parallel", text_field.at(4));
+								break;
+							case 2:
+								updateText(text.at(4) = "for_each parallel", text_field.at(4));
+								break;
+							}
+						}
+						// fps limit
+						if (buttonSpr.at(11).getGlobalBounds().contains(mousePos))
+						{
+							text_active.at(6) = true;
+							printf("text field 5 active\n");
+						}
+						// TFB 3
+						if (buttonSpr.at(12).getGlobalBounds().contains(mousePos))
+						{
+							text_active.at(2) = true;
+							printf("text field 3 active\n");
+						}
+						// TFB 4
+						if (buttonSpr.at(13).getGlobalBounds().contains(mousePos))
+						{
+							text_active.at(3) = true;
+							printf("text field 4 active\n");
+						}
+						// DESCRIBE
+						if (buttonSpr.at(14).getGlobalBounds().contains(mousePos))
+						{
+							GOL.describe();
+							printf("Max safe RAM: %u\n", RAMTest::getSafeRAM());
+							printf("Histories: %f\n", GOL.getMaxHistories(RAMTest::getSafeRAM(), true));
+							printf("Max histories: %f\n", static_cast<long double>(RAMTest::getSafeRAM()) / GOL.getMaxHistories(RAMTest::getSafeRAM(), true));
+						}
+						// regardless of where the click was
+						for (auto& b : buttonSpr)
+						{ // button color changes
+							if (b.getGlobalBounds().contains(mousePos))
+							{
+								if (b.getColor() != sf::Color::White)
+									b.setColor(sf::Color::White);
+							}
+							else if (b.getColor() == sf::Color::White)
+								b.setColor(sf::Color(195, 195, 195, 255));
+						}
+						break;
+					case sf::Event::MouseButtonReleased:
+						// dimming buttons after click
+						for (auto i = 0; i < n_button; ++i)
+							if (i != 5 && i != 6 && i != 12 && i != 13) // exclude text_fields
+								buttonSpr.at(i).setColor(sf::Color(195, 195, 195, 255));
+						break;
+					case sf::Event::TextEntered:
+						if (event.text.unicode > 0x1f && event.text.unicode < 0x3a) // numbers only
+						{
+							for (auto i = 0; i < text_field.size(); ++i)
+								if (text_active.at(i))
+								{
+									text.at(i) += event.text.unicode;
+									if (i != 4)
+										text_field.at(i).setString(text.at(i));
+									else
+										updateText(text.at(i), text_field.at(i));
+								}
+						}
+
 						break;
 					case sf::Event::Closed:
 						window.close();
@@ -319,20 +424,39 @@ int main()
 
 				if (!GOL.paused())
 				{
-					GOL.direction() ? GOL.alt_run() : GOL.unrun();
-					//GOL.describe();
-					//GOL.print();
-					//std::this_thread::sleep_for(std::chrono::milliseconds(200));
+					if (GOL.direction())
+					{
+						switch (strategy)
+						{
+						case 0:
+							GOL.seq_run();
+							break;
+						case 1:
+							GOL.run();
+							break;
+						case 2:
+							GOL.alt_run();
+							break;
+						}
+					}
+					else
+						GOL.unrun();
 				}
 
-				window.clear(sf::Color(0, 0, 128, 255));
+				text.at(5) = std::to_string(fps(fpsLimit));
+				text_field.at(5).setString(text.at(5));
+
+				window.clear(sf::Color(195, 195, 195, 255));
 				window.draw(GOL);
-				//for (auto i = 0; i < 5; ++i)
-					//window.draw(butSpr.getButton(i));
-				//window.draw(butSpr);
+				window.draw(menuBackground);
+				for (auto& a : buttonSpr)
+					window.draw(a);
+				for (auto& t : text_field)
+					window.draw(t);
+				window.draw(size_tooltip);
+				window.draw(size_tooltip2);
 				window.display();
 
-				printf("FPS: %f\n", fps(100));
 			} // while window.is_open
 
 			GOL.describe();
