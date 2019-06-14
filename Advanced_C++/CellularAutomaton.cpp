@@ -29,10 +29,10 @@ void CellularAutomaton::clear()
 
 void CellularAutomaton::run()
 {
-	if (seeds.size() && !paused)
+	if (seeds.size())
 	{
 		if (neighbourhood == Monte_Carlo)
-			runMC();
+			alt_runMC();
 		else
 		{
 			for (auto i = 0; i < cellMap.size(); ++i)
@@ -264,15 +264,15 @@ void CellularAutomaton::runMC(double kt)
 				check(i, j, (i + 1) % cellMap.size(), (j - 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at((i + 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).color)));
 			// bottom-right
-			if ((n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom )&&
+			if ((n == Moore || n == Hexagonal_Left || n == Pentagonal_Right || n == Pentagonal_Bottom) &&
 				check(i, j, (i + 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at((i + 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).color)));
 			// bottom-left
-			if ((n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left )&&
+			if ((n == Moore || n == Hexagonal_Right || n == Pentagonal_Bottom || n == Pentagonal_Left) &&
 				check(i, j, (i - 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at((i - 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).color)));
 			// top-left
-			if ((n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left )&&
+			if ((n == Moore || n == Hexagonal_Left || n == Pentagonal_Top || n == Pentagonal_Left) &&
 				check(i, j, (i - 1) % cellMap.size(), (j - 1) % cellMap.at(i).size()))
 				++nr.at(std::distance(seeds.begin(), std::find(seeds.begin(), seeds.end(), cellMap.at((i - 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).color)));
 		}
@@ -320,6 +320,54 @@ void CellularAutomaton::runMC(double kt)
 	for (auto i = 0; i < cellMap.size(); ++i)
 		for (auto j = 0; j < cellMap.at(i).size(); ++j)
 			updateCell(i, j);
+}
+
+void CellularAutomaton::alt_runMC(double kt)
+{
+	if (kt < .1 || kt >6)
+		return;
+	gatherEdges();
+	int visited = 0;
+	while (visited < edges.size())
+	{
+		auto &[x, y, used] = edges.at(dice() % edges.size());
+		if (used)
+			continue;
+		used = true;
+		visited++;
+		int energy = 0, swapEnergy = 0;
+		std::vector<sf::Color> colors;
+		colors.emplace_back(cellMap.at(x).at(y).color);
+		if (boundaryCondition)
+		{
+			for (int i = x - 1; i < x + 1; ++i)
+				for (int j = y - 1; j < y + 1; ++j)
+				{
+					auto& color = cellMap.at(i%cellMap.size()).at(j%cellMap.at(x).size()).color;
+					if (std::find(colors.begin(), colors.end(), color) == colors.end())
+						colors.emplace_back(color);
+				}
+			int swapIndex = dice() % colors.size();
+
+			for (int i = x - 1; i < x + 1; ++i)
+				for (int j = y - 1; j < y + 1; ++j)
+				{
+					auto& color = cellMap.at(i%cellMap.size()).at(j%cellMap.at(x).size()).color;
+					if (i != x && j != y && color != cellMap.at(x).at(y).color)
+						energy++;
+					if (i != x && j != y && color != colors.at(swapIndex))
+						swapEnergy++;
+				}
+			auto deltaE = swapEnergy - energy;
+			if (deltaE < 0)
+				updateCell(x, y, colors.at(swapIndex));
+			else if ((exp(-deltaE / kt) * 100) > (dice() % 100))
+				updateCell(x, y, colors.at(swapIndex));
+		}
+		else
+		{
+		}
+	}
 }
 
 void CellularAutomaton::swapVisualization()
@@ -447,7 +495,7 @@ void CellularAutomaton::updateCell(unsigned int i, unsigned int j, sf::Color col
 {
 	auto& cell = cellMap.at(i).at(j);
 	cell.color = cell.future = (color == sf::Color::White ? cell.future : color);
-	if (cell.future != sf::Color::White)
+	if (cell.color != sf::Color::White)
 		imgMap.setPixel(i, j, cell.color);
 }
 

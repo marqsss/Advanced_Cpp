@@ -47,6 +47,7 @@ public:
 	void setPalette(Palette p) { palette = p; }
 	void setColorThreshold(unsigned int ct = 50) { colorThreshold = ct; }
 	void runMC(double kt = 0.2);
+	void alt_runMC(double kt = 0.1);
 	void swapVisualization(); // ziarna <-> energia
 
 protected:

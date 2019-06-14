@@ -53,7 +53,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 			printf("ERROR opening output file'n");
 	}
 	auto turn = 0;
-	for (double t = 0; t < total_time; t += total_time / 100)
+	for (double t = 0; t < total_time; t += total_time / 100.)
 	{
 		// file output
 		if (save)
@@ -89,12 +89,13 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 			}
 		}
 		// check for new nuclei
+		auto criticalUnit = critical / cellMap.size() / cellMap.at(0).size()/100;
 		for (auto&[a, b, e] : edges)
-			if (cellMap.at(a).at(b).dislocation_density > (critical / cellMap.size() / cellMap.at(0).size()))
+			if (cellMap.at(a).at(b).dislocation_density > criticalUnit)
 			{
 				cellMap.at(a).at(b).recrystallized = turn;
 				cellMap.at(a).at(b).dislocation_density = 0;
-				auto color = sf::Color(dice() % 255, 0, 0);
+				auto color = sf::Color(dice() % 255, 0, 0, 255);
 				updateCell(a, b, color);
 				//texMap.update(color., 1, 1, a, b);
 			}
@@ -102,6 +103,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 		auto check = [&](auto k, auto l, auto x, auto y) -> bool {
 			return cellMap.at(k).at(l).dislocation_density < cellMap.at(x).at(y).dislocation_density;
 		};
+		if(turn>5)
 		for (auto i = 0; i < cellMap.size(); ++i)
 			for (auto j = 0; j < cellMap.at(i).size(); ++j)
 			{
@@ -126,7 +128,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					{
 						if (check(i, j, (i - 1) % cellMap.size(), j))
 							highest = false;
-						if (cellMap.at((i - 1) % cellMap.size()).at(j).recrystallized == turn - 1)
+						if (cellMap.at((i - 1) % cellMap.size()).at(j).recrystallized == (turn - 1))
 						{
 							recrystNeighb_x = (i - 1) % cellMap.size();
 							recrystNeighb_y = j;
@@ -137,7 +139,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					{
 						if (check(i, j, i, (j - 1) % cellMap.at(i).size()))
 							highest = false;
-						if (cellMap.at(i).at((j - 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						if (cellMap.at(i).at((j - 1) % cellMap.at(i).size()).recrystallized == (turn - 1))
 						{
 							recrystNeighb_x = i;
 							recrystNeighb_y = (j - 1) % cellMap.at(i).size();
@@ -148,7 +150,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					{
 						if (check(i, j, (i + 1) % cellMap.size(), j))
 							highest = false;
-						if (cellMap.at((i + 1) % cellMap.size()).at(j).recrystallized == turn - 1)
+						if (cellMap.at((i + 1) % cellMap.size()).at(j).recrystallized == (turn - 1))
 						{
 							recrystNeighb_x = (i + 1) % cellMap.size();
 							recrystNeighb_y = j;
@@ -159,7 +161,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					{
 						if (check(i, j, i, (j + 1) % cellMap.at(i).size()))
 							highest = false;
-						if (cellMap.at(i).at((j + 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						if (cellMap.at(i).at((j + 1) % cellMap.at(i).size()).recrystallized == (turn - 1))
 						{
 							recrystNeighb_x = i;
 							recrystNeighb_y = (j + 1) % cellMap.at(i).size();
@@ -170,7 +172,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					{
 						if (check(i, j, (i + 1) % cellMap.size(), (j - 1) % cellMap.at(i).size()))
 							highest = false;
-						if (cellMap.at((i + 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						if (cellMap.at((i + 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).recrystallized == (turn - 1))
 						{
 							recrystNeighb_x = (i + 1) % cellMap.size();
 							recrystNeighb_y = (j - 1) % cellMap.at(i).size();
@@ -181,7 +183,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					{
 						if (check(i, j, (i + 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
 							highest = false;
-						if (cellMap.at((i + 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						if (cellMap.at((i + 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).recrystallized == (turn - 1))
 						{
 							recrystNeighb_x = (i + 1) % cellMap.size();
 							recrystNeighb_y = (j + 1) % cellMap.at(i).size();
@@ -192,7 +194,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					{
 						if (check(i, j, (i - 1) % cellMap.size(), (j + 1) % cellMap.at(i).size()))
 							highest = false;
-						if (cellMap.at((i - 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						if (cellMap.at((i - 1) % cellMap.size()).at((j + 1) % cellMap.at(i).size()).recrystallized == (turn - 1))
 						{
 							recrystNeighb_x = (i - 1) % cellMap.size();
 							recrystNeighb_y = (j + 1) % cellMap.at(i).size();
@@ -203,7 +205,7 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					{
 						if (check(i, j, (i - 1) % cellMap.size(), (j - 1) % cellMap.at(i).size()))
 							highest = false;
-						if (cellMap.at((i - 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).recrystallized == turn - 1)
+						if (cellMap.at((i - 1) % cellMap.size()).at((j - 1) % cellMap.at(i).size()).recrystallized == (turn - 1))
 						{
 							recrystNeighb_x = (i - 1) % cellMap.size();
 							recrystNeighb_y = (j - 1) % cellMap.at(i).size();
@@ -262,35 +264,30 @@ void CARecrystallizer::recrystallize(double x, bool save, std::string path)
 					}
 				}
 				if (highest && recrystNeighb_x)
-					cellMap.at(i).at(j).future = cellMap.at(recrystNeighb_x).at(recrystNeighb_y).future;
+					updateCell(i, j, cellMap.at(recrystNeighb_x).at(recrystNeighb_y).color);
 			} // grow nuclei loop
-		// update all cells
-		for (auto i = 0; i < cellMap.size(); ++i)
-			for (auto j = 0; j < cellMap.at(i).size(); ++j)
-				updateCell(i, j);
 		++turn;
-		//visualize();
 	}
 	if (save)
 		file.close();
+	visualize();
 }
 
 void CARecrystallizer::drawing_mode(int mode)
 {
-	sf::Image temp;
 	if (mode == 1)
 	{
-		temp.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
+		imgMap.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
 		gatherEdges();
 		for (auto i = 0; i < edges.size(); ++i)
 		{
 			auto[x, y, d] = edges.at(i);
-			temp.setPixel(x, y, cellMap.at(x).at(y).color);
+			imgMap.setPixel(x, y, cellMap.at(x).at(y).color);
 		}
 	}
 	if (mode == 2)
 	{
-		temp.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
+		imgMap.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
 		double maxDisloc = 0;
 		for (auto& row : cellMap)
 			for (auto& cell : row)
@@ -298,18 +295,17 @@ void CARecrystallizer::drawing_mode(int mode)
 					maxDisloc = cell.dislocation_density;
 		for (auto i = 0; i < cellMap.size(); ++i)
 			for (auto j = 0; j < cellMap.at(i).size(); ++j)
-				temp.setPixel(i, j, sf::Color(cellMap.at(i).at(j).dislocation_density / maxDisloc * 255, 0, 0));
+				imgMap.setPixel(i, j, sf::Color(cellMap.at(i).at(j).dislocation_density / maxDisloc * 255, 0, 0));
 	}
 	else
 	{
-		temp.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
+		imgMap.create(cellMap.size(), cellMap.at(0).size(), sf::Color::White);
 		for (auto i = 0; i < cellMap.size(); ++i)
 			for (auto j = 0; j < cellMap.at(i).size(); ++j)
-				temp.setPixel(i, j, cellMap.at(i).at(j).color);
+				imgMap.setPixel(i, j, cellMap.at(i).at(j).color);
 	}
 	texMap.create(cellMap.size(), cellMap.at(0).size());
-	texMap.update(temp);
-	setTexture(texMap);
+	visualize();
 }
 
 // PRIVATE ////////////////////////////////////////////////////////////////////
